@@ -1,0 +1,30 @@
+---
+title: "Cost of Living"
+output: html_document
+---
+
+Basic chunk
+```{r}
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Set working dir (set yours!)
+```{r}
+setwd("/Users/gianmarcofistani/Desktop/BABD/courses/9_FOS/_project/statistics-project/src")
+```
+
+Load original data
+```{r}
+data <- read.csv("./../data/cost-of-living.csv")
+View(data)
+```
+
+Load formatted data
+```{r}
+f_data <- read.csv("./../data/cost-of-living-formatted.csv")
+View(f_data)
+```
+
