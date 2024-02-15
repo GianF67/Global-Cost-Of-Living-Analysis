@@ -1,5 +1,5 @@
 ---
-title: "Cost of Living"
+title: "Cost of Living Analysis"
 output: html_document
 ---
 
