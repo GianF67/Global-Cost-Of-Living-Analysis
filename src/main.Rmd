@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Set working dir (set yours!)
 ```{r}
-setwd("/Users/gianmarcofistani/Desktop/BABD/courses/9_FOS/_project/statistics-project/src")
+setwd("/Users/gianmarcofistani/Desktop/BABD/courses/9_FOS/6_projects/cost-of-living-analysis/src")
 ```
 
 Load original data
