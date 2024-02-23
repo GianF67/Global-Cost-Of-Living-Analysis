@@ -1,5 +1,5 @@
 #Select the local working directory
-proj_directory <- "C:/Users/jadem/OneDrive/Desktop/BABD/Statistics/PersoProject/Statistics_Project/Data"
+proj_directory <- "SET DIRECTORY"
 setwd(proj_directory)
 
 #load packages
@@ -26,7 +26,7 @@ index_table <- data.frame(
 
 subset(index_table, column_name=="x34") #Find one specific row given the column label, just replace "x34"
 
-#Visualising the summary as boxplots -> Significant outliers for metrics x35, x38 and x52
+#Visualising the summary as boxplots -> Significant larger distribution for metrics x35, x38 and x52 compared to the rest of the variables
 library(tidyr)
 
 col_data_long <- gather(col_data, key = "metric", value = "value", -city, -country)
@@ -64,12 +64,12 @@ col_imputed_country <- col_imputed_country %>%
 
 col_imputed_na <- na.omit(col_imputed_country) #drop remaining missing values
 
-data <- select(col_imputed_na, -x28, -x29, -x40, -x43, -x51, -x52, -x53) #Lastly remove from data the variables highlighted above as missing too many values for analysis.
+data <- select(col_imputed_na, -x28, -x29, -x40, -x43, -x50, -x51, -x52, -x53) #Lastly remove from data the variables highlighted above as missing too many values for analysis.
 
 View(data)
 #ANALYSIS
 sum(is.na(data)) #0
-dim(data) # obs./row:4849  variables/columns:51 -> little rows/columns lost
+dim(data) # obs./row:4849  variables/columns:50 -> little rows/columns lost
 summary(data) #compared to summary(col_imputed) -> distribution and relationships are impacted as it now pulls towards each country avg. 
 length(unique(data$country)) #152 distinct countries -> 63 lost countries
 
@@ -86,7 +86,7 @@ markets <- c("x9", "x10", "x11", "x12", "x13", "x14", "x15", "x16", "x17", "x18"
 markets1 <- data[, c("city", "country", markets)]
 markets1_long <- gather(markets1, key = "metric", value = "value", -city, -country)
 
-transportation <- c("x28", "x30", "x31", "x32", "x33")
+transportation <- c("x30", "x31", "x32", "x33")
 transportation1 <- data[, c("city", "country", transportation)]
 transportation1_long <- gather(transportation1, key = "metric", value = "value", -city, -country)
 
@@ -110,7 +110,7 @@ clothing_and_shoes <- c("x44", "x45", "x46", "x47")
 clothing_and_shoes1 <- data[, c("city", "country", clothing_and_shoes)]
 clothing_and_shoes1_long <- gather(clothing_and_shoes1, key = "metric", value = "value", -city, -country)
 
-rent_per_month <- c("x48", "x49", "x50", "x51")
+rent_per_month <- c("x48", "x49")
 rent_per_month1 <- data[, c("city", "country", rent_per_month)]
 rent_per_month1_long <- gather(rent_per_month1, key = "metric", value = "value", -city, -country)
 
@@ -179,7 +179,7 @@ salary_plot <- ggplot(salaries_and_financing1_long, aes(x = metric, y = value)) 
 library(patchwork)
 meal_plot + restaurant_plot + market_plot + transport_plot + car_plot + utilities_plot + sport_plot + childcare_plot + clothing_plot + rent_plot + salary_plot
 
-#ANALYSIS -> Outliers present in x2, x4, x15, x32, x35, x36, x39, x46, x50, x51, x52, x54
+#ANALYSIS -> Outliers present in x2, x4, x15, x32, x35, x36, x39, x46, x54
   #x2 Meal for 2 People, Mid-range -> Mendrisio, Switzerland USD 213.69 -> considering that this looks at mid-range restaurants the price can be accepted (despite it being on the higher end)
   #x4 Domestic Beer (in restaurant) -> Al Wakrah, Qatar USD 20.60 -> cost of beer tends to be higher in countries whose majority of the population is Muslim due to scarcity and high avg cost of living
   #x15 Beef Round (1kg) -> top outliers are both cities from Switzerland 
@@ -187,13 +187,11 @@ meal_plot + restaurant_plot + market_plot + transport_plot + car_plot + utilitie
   #x34, x35 New cars -> outliers are both Iranian cities, the cost of owning a car compared to the rest of the cost of living doesn't seem to match
   #x39 Fitness Club -> outliers are oultindish, not sure they can be relied on
   #x46 Fitenss shoes -> 900+USD for a pair of common running shoes seems outlandish for any country?
-  #x50 Apartment (3 bedrooms) in City Centre -> Seoul + Shanghai
-  #x51 Apartment (3 bedrooms) Outside of Centre -> Kermanshah,	Iran this doesn't seem correct
   #x54 Average Monthly Net Salary (After Tax) -> Schaan, Liechtenstein, the country is so small that for analysis purposes I think we can disregard this
 
-#ACTIONS -> Trim oultiers for x15 (top 2), x32(top 1), x39 (top 2), x46 (top 2), x50 (top 2), x51 (top 1)
+#ACTIONS -> Trim oultiers for x15 (top 2), x32(top 1), x39 (top 2), x46 (top 2)
 
 #Other considerations
-  #in original analysis Solomon islands outlier in internet -> false data. I wonder if any of the utilities data is reliable.
-  #Niamey, Niger -> the categorical data seems incorrect, we might need to manually fact check this row -> incorrect values x32, x34, x37, x38
+  #in original analysis Solomon islands outlier in internet, looks like wrong data.
+  #Niamey, Niger -> the categorical data seems incorrect, manually fact check this row against Numbeo data -> incorrect values x32, x34, x37, x38
   #Countries such as Greenland might simply lack the information for certain values (eg cars) so results should be taking this factors into consideration.
