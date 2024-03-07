@@ -1,24 +1,28 @@
 ---
-title: "Cost Of Living Index"
+title: "Cost Of Living Index V2"
 output: html_document
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Dataset
-```{}
-https://www.kaggle.com/datasets/mvieira101/global-cost-of-living
-```
+# 1) Dataset
 
-# Set working dir (set yours!)
+https://www.kaggle.com/datasets/mvieira101/global-cost-of-living
+
+# 2) Working dir
+
 ```{r}
 setwd("/Users/gianmarcofistani/Desktop/BABD/courses/9_FOS/6_projects/cost-of-living-analysis/src")
 ```
 
-# Import libraries
-```{r,}
+# 3) Import libraries
+
+```{r}
 library(dplyr)
 library(tidyverse)
 library(dplyr)
@@ -26,12 +30,14 @@ library(magrittr) #so we can use the pipe operator %>%
 library(caTools)
 ```
 
-# Load data
+# 4) Data loading
+
 ```{r}
 original_data <- read.csv("./../data/cost-of-living-updated.csv")
 ```
 
-# Cleaning data
+# 5) Data cleaning
+
 ```{r}
 col_imputed_country <- original_data
 
@@ -40,10 +46,16 @@ col_imputed_country <- col_imputed_country %>%
   mutate(across(where(is.numeric), ~ifelse(is.na(.), mean(., na.rm = TRUE), .))) 
 
 clean_data <- na.omit(col_imputed_country) #drop remaining missing values
+
+# remove variables that miss too many values for analysis.
+clean_data <- select(clean_data, -x28, -x29, -x40, -x43, -x50, -x51, -x52, -x53) 
+#print(clean_data)
 ```
 
-# Format data
-## Grouping data by coyntry
+# 6) Format data
+
+## 6.1) Grouping data by country
+
 ```{r}
 grouped_data <- clean_data %>%
   group_by(country) %>%
@@ -75,8 +87,8 @@ grouped_data <- clean_data %>%
     x25 = mean(x25),
     x26 = mean(x26),
     x27 = mean(x27),
-    x28 = mean(x28),
-    x29 = mean(x29),
+    #x28 = mean(x28),
+    #x29 = mean(x29),
     x30 = mean(x30),
     x31 = mean(x31),
     x32 = mean(x32),
@@ -87,105 +99,108 @@ grouped_data <- clean_data %>%
     x37 = mean(x37),
     x38 = mean(x38),
     x39 = mean(x39),
-    x40 = mean(x40),
+    #x40 = mean(x40),
     x41 = mean(x41),
     x42 = mean(x42),
-    x43 = mean(x43),
+    #x43 = mean(x43),
     x44 = mean(x44),
     x45 = mean(x45),
     x46 = mean(x46),
     x47 = mean(x47),
     x48 = mean(x48),
     x49 = mean(x49),
-    x50 = mean(x50),
-    x51 = mean(x51),
-    x52 = mean(x52),
-    x53 = mean(x53),
+    #x50 = mean(x50),
+    #x51 = mean(x51),
+    #x52 = mean(x52),
+    #x53 = mean(x53),
     x54 = mean(x54),
     x55 = mean(x55)
   )
 ```
 
 ```{r}
-View(grouped_data)
+head(grouped_data)
 ```
 
-## Grouping data by categories
-```{r}
-headers                <- grouped_data[,1]
-restaurants            <- grouped_data[,2:4]
-markets                <- grouped_data[,10:28]
-transportation         <- grouped_data[,c(29,30,32,34)]
-utilities              <- grouped_data[,37]
-sports_and_leisure     <- grouped_data[,40:42]
-childcare              <- grouped_data[,43:44]
-clothing_and_shoes     <- grouped_data[,45:48]
-rent_per_month         <- grouped_data[,49:52]
-buy_apartment_price    <- grouped_data[,53:54]
-salaries_and_financing <- grouped_data[,55]
-```
+## 6.2) Grouping data by category
 
 ```{r}
-View(cbind(headers,salaries_and_financing))
+headers                <- grouped_data[,1] 
+meal                   <- grouped_data[,2:3] 
+restaurants            <- grouped_data[,4:9] 
+markets                <- grouped_data[,10:28] 
+transportation         <- grouped_data[,29:32] 
+car                    <- grouped_data[,33:34] 
+utilities              <- grouped_data[,35:37] 
+sports_and_leisure     <- grouped_data[,38:39] 
+childcare              <- grouped_data[,40] 
+clothing_and_shoes     <- grouped_data[,41:44] 
+rent_per_month         <- grouped_data[,45:46] 
+salaries_and_financing <- grouped_data[,47:48]
 ```
 
+Compute the average of each categories
 ```{r}
+meal_avg                   <- round(rowMeans(meal), digits=2)
 restaurants_avg            <- round(rowMeans(restaurants), digits=2)
 markets_avg                <- round(rowMeans(markets),digits=2)
 transportation_avg         <- round(rowMeans(transportation),digits=2)
+car_avg                    <- round(rowMeans(car),digits=2)
 utilities_avg              <- round(rowMeans(utilities),digits=2)
 sports_and_leisure_avg     <- round(rowMeans(sports_and_leisure),digits=2)
 childcare_avg              <- round(rowMeans(childcare),digits=2)
 clothing_and_shoes_avg     <- round(rowMeans(clothing_and_shoes),digits=2)
 rent_per_month_avg         <- round(rowMeans(rent_per_month),digits=2)
-buy_apartment_price_avg    <- round(rowMeans(buy_apartment_price),digits=2)
+#buy_apartment_price_avg    <- round(rowMeans(buy_apartment_price),digits=2)
 salaries_and_financing_avg <- round(rowMeans(salaries_and_financing),digits=2)
 ```
 
-# Analysis
+# 7) Cost Of Living Index Analysis
 
-## Cost Of Living Index (COLI)
-This index indicates the relative prices of consumer goods like groceries, restaurants, transportation, and utilities. 
+The Cost of Living Index (COLI) is a measure designed to quantify the relative cost of living in different geographic locations or over time. It provides a numerical comparison of the overall expenses required to maintain a certain standard of living, taking into account various factors such as housing, food, transportation, healthcare, and other essential expenses.
+
+In our analysys we keep the following factors:
+- meal
+- restaturant
+- market
+- transports
+- cost per month
+- salary
+
 ```{r}
 basket <- data.frame(
-   Restaurants    = restaurants_avg
+  Meal            = meal_avg
+  ,Restaurants    = restaurants_avg
   ,Markets        = markets_avg
   ,Transports     = transportation_avg
-  ,Utilities      = utilities_avg
-  ,Entertainment  = sports_and_leisure_avg
-  #,Childcare      = childcare_avg
-  ,Clothing       = clothing_and_shoes_avg
   ,MonthlyRent    = rent_per_month_avg
-  ,ApartmentPrice = buy_apartment_price_avg
   ,Salaries       = salaries_and_financing_avg
 )
 
 coli <- (
-  basket$Restaurants*0.11
-  +basket$Markets*0.09
-  +basket$Transports*0.09
-  +basket$Utilities*0.07
-  +basket$Entertainment*0.05
-  #+basket$Childcare*0.07
-  +basket$Clothing*0.06 
-  +basket$MonthlyRent*0.16
-  +basket$ApartmentPrice*0.21
-  +basket$Salaries*0.16
+  basket$Meal*0.2
+  +basket$Restaurants*0.10
+  +basket$Markets*0.2
+  +basket$Transports*0.15
+  +basket$MonthlyRent*0.20
+  +basket$Salaries*0.15
 )/ncol(basket)
 
 basket3 <- data.frame(headers, basket, COLI = coli)
 ```
 
 ```{r}
-basket3 <- filter(basket3, country != "Somalia")
-View(basket3)
+head(basket3)
 ```
 
-### 1) Simple Linear Regression: COLI VS Average Restaurants Costs
+## 7.1) COLI VS Average Restaurants Costs
 
-In this linear regression our model is: COLI = beta_0 + beta_1 * Restaurants + Eps
+Now, we create two subset: 
+- training-set
+- test-set.
 
-Now, we create two subset: trainingset and testset.
+This approach allows us to evaluate the performance of our model on unseen data and helps prevent overfitting.
+By splitting our dataset into a training-set and a test-set, we can train our linear regression model on the training set and then evaluate its performance on the test set. This provides an unbiased estimate of how well our model will generalize to new, unseen data.
 ```{r}
 coli_and_restaturnats <- basket3[,c("Restaurants", "COLI")]
 split = sample.split(coli_and_restaturnats$COLI, SplitRatio = 0.7)
@@ -193,29 +208,20 @@ trainingset = subset(coli_and_restaturnats, split == TRUE)
 testset = subset(coli_and_restaturnats, split == FALSE)
 ```
 
-Let's plot the catteplot of the trainingset
+Model: COLI = beta_0 + beta_1 Restaurants + Eps
 ```{r}
-ggplot(trainingset, aes(x = Restaurants, y = COLI)) +
-geom_point() +
-geom_smooth(method = "lm", se = FALSE) +  # Adds a trend line
-labs(
-  x = "Average Restaurant Cost",
-  y = "COLI", 
-  title = "COLI vs. Average Restaurant Cost"
-) 
+mod1 <- lm(COLI ~ Restaurants, data = trainingset)
 ```
 
-Now we try identify the outliers through the standardized residuals method. Standardized residuals represent the number of standard deviations a data point is away from the regression line. As we can see. from the chart there are outliers (extreme standardized residuals) which suggest points that the model doesn't fit well.
-
+Now we try identify the outliers through the standardized residuals
+method. Standardized residuals represent the number of standard
+deviations a data point is away from the regression line. As we can see.
+from the chart there are outliers (extreme standardized residuals) which
+suggest points that the model doesn't fit well.
 ```{r}
-mod1_v2 <- lm(trainingset$COLI ~ trainingset$Restaurants, data = trainingset)
-
-std_residuals <- rstandard(mod1_v2)
-
+std_residuals <- rstandard(mod1)
 outlier_indices <- which(abs(std_residuals) > 2)  # Adjust the threshold if needed
-
 outliers <- trainingset[outlier_indices, ] 
-#print(outliers)
 
 ggplot(trainingset, aes(x = Restaurants, y = COLI)) +
   geom_point() +
@@ -223,54 +229,100 @@ ggplot(trainingset, aes(x = Restaurants, y = COLI)) +
   geom_point(data = outliers, color = "red")
 ```
 
-Let's compute the correlation!
-
-- A positive value close to 1 indicates a strong positive correlation
-- A negative value close to -1 indicates a strong negative correlation
-- A value around 0 indicates a weak or no correlation (our case)
-
+Let's compute the correlation:
 ```{r}
 mod1_correlation <- cor(coli_and_restaturnats$Restaurants, coli_and_restaturnats$COLI)
 print(mod1_correlation) 
 ```
 
-The plot shows a positive correlation between average restaurant cost and COLI. This means that cities with a higher COLI tend to have higher average restaurant costs. However, the correlation is not perfect, and there are some cities that deviate from the trend. Points scattered above and below the trend line represent cities that are outliers, meaning their restaurant costs are higher or lower than expected based on their COLI.
-The correlation coefficient of 0.34, which indicates that while there's a tendency for these factors to rise together, the relationship isn't very reliable. There will be several cities (outliers) that deviate from this pattern. A low coefficient indicates little linear relationship between the variables. This means that changes in one variable are not associated with changes in the other variable in a predictable manner. 
-The weak correlation tells us that COLI alone doesn't explain much of the variation in restaurant prices. A city with a high COLI might have surprisingly affordable restaurants, or vice versa (Limited predictability). To understand restaurant costs in a city, you need to consider additional variables, for example tourism or local economic conditions. That's why we'll perform a multiple linear regression.
+The plot shows a positive correlation between average restaurant cost
+and COLI. This means that cities with a higher COLI tend to have higher
+average restaurant costs. However, the correlation is not perfect, and
+there are some cities that deviate from the trend. Points scattered
+above and below the trend line represent cities that are outliers,
+meaning their restaurant costs are higher or lower than expected based
+on their COLI. The correlation coefficient of 0.8, which indicates that
+while there's a tendency for these factors to rise together, the
+relationship is very reliable. 
+A high coefficient indicates a strong linear relationship between the variables. 
+This means that changes in one variable are associated with changes in the other
+variable in a predictable manner. 
+
+Even though cost of restaurants might be a good indicator/predictor of a city's 
+overall COLI to some extent, this doesn't prove that expensive restaurants 
+directly cause a higher COLI. There may be other economic factors that drive 
+up both restaurant costs and other living expenses, contributing to the high 
+correlation. That's why, later on, we'll perform a multiple linear regression.
 
 Let's analyse the model:
-
 ```{r}
-mod1 <- lm(formula = COLI ~ Restaurants, data = trainingset)
 summary(mod1)
 ```
 
-Each residual in the “Residuals” section denotes the difference between the actual COLI and predicted values. These values are unique to each observation in the data set. For instance, the observation 'min' has a residual of -191.41.
+Each residual in the “Residuals” section denotes the difference between
+the actual COLI and predicted values. These values are unique to each
+observation in the data set. For instance, the observation 'min' has a
+residual of -86.886.
 
-The estimated COLI when Restaurants (average cost of restaurant) is zero is 43.050, which represents the intercept for this case.
+The estimated COLI when Restaurants (average cost of restaurant) is zero
+is -22.044, which represents the intercept for this case.
 
-For every additional COLI point, the expected COLI is estimated to increase by 4.189 units according to the coefficient for Restaurants. This coefficient value suggests that each additional cost in restaurant has a low impact on the estimated COLI.
+For every additional COLI point, the expected COLI is estimated to
+increase by 19.234 units according to the coefficient for Restaurants.
+This coefficient value suggests that each additional cost in restaurant
+has a significant impact on the estimated COLI.
 
-The "Std. Error" (more precise estimates) can be deduced from smaller standard errors that are a gauge of the ambiguity that comes along with coefficient estimates.
+The "Std. Error" (more precise estimates) can be deduced from smaller
+standard errors that are a gauge of the ambiguity that comes along with
+coefficient estimates.
 
-The coefficient estimate’s standard error distance from zero is measured by the "t-value". Its purpose is to examine the likelihood of the coefficient being zero by testing the null hypothesis. A higher t-value’s absolute value indicates a higher possibility of statistical significance pertaining to the coefficient.
+The coefficient estimate’s standard error distance from zero is measured
+by the "t-value". Its purpose is to examine the likelihood of the
+coefficient being zero by testing the null hypothesis. A higher
+t-value’s absolute value indicates a higher possibility of statistical
+significance pertaining to the coefficient.
 
-The "Pr(>|t|)" provides the p-value associated with the t-value. The p-value indicates the probability of observing the t-statistic (or more extreme) under the null hypothesis that the coefficient is zero. In this case, the p-value for the intercept is 0.14395, and for Restaurants, it is 0.00259.
+The "Pr(\>\|t\|)" provides the p-value associated with the t-value. The
+p-value indicates the probability of observing the t-statistic (or more
+extreme) under the null hypothesis that the coefficient is zero. In this
+case, the p-value for the intercept is 6.8e-06, and for Restaurants, it
+is <2e-16.
 
-The "Residual standard error" is a measure of the variability of the residuals. In this case, it’s 159.1, which represents the typical difference between the actual COLI and the predicted COLI.
+The "Residual standard error" is a measure of the variability of the
+residuals. In this case, it’s 20.24, which represents the typical
+difference between the actual COLI and the predicted COLI.
 
-The "Multiple R-squared", or R-squared (R²), is a measure of the goodness of fit of the model. It represents the proportion of the variance in the dependent variable that is explained by the independent variable(s). In this case, the R-squared is 0.08392, which means that approximately 8% of the variation in COLI can be explained by (average) cost of restaurant.
+The "Multiple R-squared", or R-squared (R²), is a measure of the
+goodness of fit of the model. It represents the proportion of the
+variance in the dependent variable that is explained by the independent
+variable(s). In this case, the R-squared is 0.6537, which means that
+approximately 65.37% of the variation in COLI can be explained by (average)
+cost of restaurant.
 
-The "Adjusted R-squared" adjusts the R-squared value based on the number of predictors in the model. It accounts for the complexity of the model. In this case, the adjusted R-squared is 0.07512.
+The "Adjusted R-squared" adjusts the R-squared value based on the number
+of predictors in the model. It accounts for the complexity of the model.
+In this case, the adjusted R-squared is 0.6503.
 
-The "F-statistic" is used to test the overall significance of the model. In this case, the F-statistic is 9.528 with 1 and 104 degrees of freedom, and the associated p-value is 0.002594. This p-value suggests that the model is statistically significant (<< 0.05).
+The "F-statistic" is used to test the overall significance of the model.
+In this case, the F-statistic is 196.3 with 1 and 104 degrees of
+freedom, and the associated p-value is <2.2e-16. This value suggests
+that the model is statistically significant (\<\< 0.05).
 
-In summary, this low p-value suggests a statistically significant relationship between our predictor (Restaurants) and the outcome variable (COLI). We can likely reject the null hypothesis (i.e., there's no relationship). There's strong evidence that at least one of your predictors has a real effect on the outcome. Our model explains only about 8.39% of the variability in the outcome variable. This indicates a relatively weak fit. A large portion of the variation in the outcome is likely due to factors not included in your model.
+In summary, this low p-value suggests a statistically significant
+relationship between our predictor (Restaurants) and the outcome
+variable (COLI). The extremely low p-value (essentially 0) provides very strong 
+evidence against the null hypothesis, which states there's no relationship 
+between COLI and restaurant cost.
 
-#### 1.3) Predict values using predict function
+While restaurants explains a good portion of COLI fluctuations, there are still 
+other important factors (35% of the variation is unexplained). Consider a 
+multiple linear regression model to include them.
+
+### Predict values using predict function
 ```{r}
 # Create a data frame with new input values
-new_data <- data.frame(Restaurants = c(70.0, 72.5,69.0,74.0))
+new_data <- data.frame(Restaurants = c(7.3, 7.5, 6.9, 7.8))
+print(new_data)
 
 # Predict using the linear regression model
 predicted_restaurant_costs <- predict(mod1, newdata = new_data)
@@ -279,94 +331,140 @@ predicted_restaurant_costs <- predict(mod1, newdata = new_data)
 print(predicted_restaurant_costs)
 ```
 
-#### 1.4) Visualising the Training set results
+### Visualising the Training set results
 ```{r}
 ggplot() + 
 geom_point(
-aes(x = trainingset$Restaurants, y = trainingset$COLI), colour = 'red') +
+aes(x = trainingset$Restaurants, y = trainingset$COLI), colour = 'black') +
 geom_line(aes(x = trainingset$Restaurants, y = predict(mod1, newdata = trainingset)), colour = 'blue') +
-ggtitle('COLI vs. Average Restaurants Costs (Training set)') +
-xlab('Average Restaurants Costs') +
+ggtitle('Training set') +
+xlab('Restaurants') +
 ylab('COLI')
 ```
 
-#### 1.5) Visualising the Test set results
+### Visualising the Test set results
 ```{r}
 ggplot() +
-geom_point(aes(x = testset$Restaurants, y = testset$COLI), colour = 'red') +
+geom_point(aes(x = testset$Restaurants, y = testset$COLI), colour = 'black') +
 geom_line(aes(x = trainingset$Restaurants, y = predict(mod1, newdata = trainingset)), colour = 'blue') +
-ggtitle('COLI vs. Average Restaurants Costs (Test set)') +
-xlab('Average Restaurants Costs') +
+ggtitle('Test set') +
+xlab('Restaurants') +
 ylab('COLI')
 ```
+## 7.2) COLI VS Average Market Costs
 
-### 2) Simple Linear Regression: COLI VS Average Market Costs
 ```{r}
 coli_and_markets <- basket3[,c("Markets", "COLI")]
+
+attach(coli_and_markets)
 
 ggplot(coli_and_markets, aes(x = Markets, y = COLI)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE) +  # Adds a trend line
-  labs(
-    x = "Average Markets Cost",
-    y = "COLI", 
-    title = "COLI vs. Average Markets Cost") 
+  labs(x = "Markets",y = "COLI") 
 
 # Regression
-mod2 <- lm(coli_and_markets$COLI ~ coli_and_markets$Markets)
+mod2 <- lm(COLI ~ Markets)
 
 summary(mod2)
+
+detach(coli_and_markets)
 ```
 
-#### 2.1) Correlation
+Correlation
 ```{r}
 mod2_correlation <- cor(coli_and_markets$Markets, coli_and_markets$COLI)
 print(mod2_correlation) 
 ```
 
-### 3) Simple Linear Regression: COLI VS Average MonthlyRent Costs
-```{r}
-```
+## 7.3) COLI VS Average MonthlyRent Costs
 
-### 4) Simple Linear Regression: COLI VS Average ApartmentPrice Costs
 ```{r}
-```
+coli_and_monthlyRent <- basket3[,c("MonthlyRent", "COLI")]
 
-### 5) Simple Linear Regression: COLI VS Average Salaries Costs
-```{r}
-coli_and_salaries <- basket3[,c("Salaries", "COLI")]
+attach(coli_and_monthlyRent)
 
-ggplot(coli_and_salaries, aes(x = Salaries, y = COLI)) +
+ggplot(coli_and_monthlyRent, aes(x = MonthlyRent, y = COLI)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE) +  # Adds a trend line
-  labs(
-    x = "Average Salaries Cost",
-    y = "COLI", 
-    title = "COLI vs. Average Salaries Cost")
+  labs(x = "Monthly Rent",y = "COLI") 
 
 # Regression
-mod5 <- lm(coli_and_salaries$COLI ~ coli_and_salaries$Salaries)
-summary(mod5)
+mod3 <- lm(COLI ~ MonthlyRent)
+
+summary(mod3)
+
+attach(coli_and_monthlyRent)
 ```
 
-#### 10.1) Correlation
+Correlation
 ```{r}
-mod10_correlation <- cor(coli_and_salaries$Salaries, coli_and_salaries$COLI)
-print(mod10_correlation) 
+mod3_correlation <- cor(coli_and_monthlyRent$MonthlyRent, coli_and_monthlyRent$COLI)
+print(mod3_correlation) 
 ```
 
-### 11) Multiple Linear Regression
+## 7.4) COLI VS Average Meal Costs
 
-Since our prediction on the simple linear regression didn't go well, we decided to try a multiple linear regression and try to see if changes in COLI are affected by many factors.
-By including additional predictors, you often significantly increase the R-squared value, meaning the model explains a greater amount of the variation in your target variable.
-Multiple linear regression helps you see which predictors carry the most explanatory weight, even when other variables are considered.
+```{r}
+coli_and_salary <- basket3[,c("Salaries", "COLI")]
 
-To identify good predictors to include in our model, we analyse the correlations between the predictors and the target variable, which is the COLI. 
+attach(coli_and_salary)
 
+ggplot(coli_and_salary, aes(x = Salaries, y = COLI)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +  # Adds a trend line
+  labs(x = "Salary",y = "COLI") 
+
+# Regression
+mod4 <- lm(COLI ~ Salaries)
+
+summary(mod4)
+
+detach(coli_and_salary)
+```
+
+## 7.5) COLI VS Average Meal Costs
+
+```{r}
+coli_and_meal <- basket3[,c("Meal", "COLI")]
+
+attach(coli_and_meal)
+
+ggplot(coli_and_meal, aes(x = Meal, y = COLI)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +  # Adds a trend line
+  labs(x = "Meal",y = "COLI") 
+
+# Regression
+mod5 <- lm(COLI ~ Meal)
+
+summary(mod5)
+
+detach(coli_and_meal)
+```
+
+Correlation
+```{r}
+mod5_correlation <- cor(coli_and_meal$Meal, coli_and_meal$COLI)
+print(mod5_correlation) 
+```
+
+## 7.6) COLI VS Restaurants + Markets + MonthlyRent + ApartmentPrice
+
+Now we try a multiple linear regression to see if changes in COLI are affected 
+by many factors. By including additional predictors, you often significantly 
+increase the R-squared value, meaning the model explains a greater amount of the 
+variation in your target variable. Multiple linear regression helps you see 
+which predictors carry the most explanatory weight, even when other variables 
+are considered.
+
+To identify good predictors to include in our model, we analyse the
+correlations between the predictors and the target variable, which is
+the COLI.
 ```{r}
 cols <- names(basket3)
 cols <- cols[-1] #remove country column
-cols <- cols[1:9] #remove COLI column
+cols <- cols[1:6] #remove COLI column
 
 for (col in cols) {
   idx <- which(colnames(basket) == col) 
@@ -375,93 +473,87 @@ for (col in cols) {
   cat(col,cor,'\n')
 }
 ```
-The categories with the highest correlation are: Markets and ApartmentPrice. Let's add them into our model.
+The categories with the highest correlation are: 
+- Restaurants
+- Markets 
+- MonthlyRent 
+- Salaries
 
+Let's add them into our model:
 ```{r}
-mod12 <- lm(formula = COLI ~ Restaurants + Markets + MonthlyRent + ApartmentPrice, data = basket3)
-summary(mod12)
+mod6 <- lm(formula = COLI ~ Restaurants + Markets + MonthlyRent + Salaries, data = basket3)
+summary(mod6)
 ```
 
+Our regression analysis demonstrates a highly effective model with a remarkable R-squared value of 0.9999 and significant F-statistic, indicating strong explanatory power and model fit. All independent variables exhibit statistical significance (p < 0.05), affirming their substantial impact on the dependent variable. Coefficients display expected positive signs, and residuals are approximately normally distributed, validating the reliability of our analysis.
+
+Let's compare the mod1 (simple reg) and mod5 (multiple reg) models using R-squared:
 ```{r}
-# Compare models (e.g., using R-squared):
 summary(mod1)$r.squared
-summary(mod12)$r.squared 
+summary(mod6)$r.squared 
 ```
 
-The model explains approximately 99% of the variation in COLI. This suggests the chosen predictors have a strong relationship with the COLI.
-The adjusted R-squared is very close to the normal R-squared, this is another sign suggesting our chosen predictors fit well the model. If the difference between R-squared and adjusted R-squared is small, it indicates our model is not overly complex and likely generalizes well to new data, it's no affaccted by overfitting.
-
-Assumptions of Linear Regression
-- Linearity: Relationships between predictors and the target should be linear (how?)
-  - plot each predictors
-- Normality of residuals: Residuals should be approximately normally distributed (how?).
-  - plot the Residuals vs. Fitted Values
-- Homoscedasticity: Variance of residuals should be constant (how?).
-  - plot the Residuals vs. Fitted Values
-- No multicollinearity: High correlations between predictors can inflate model coefficients (how?).
+The model explains approximately 99% of the variation in COLI. This
+suggests the chosen predictors have a strong relationship with the COLI.
+The adjusted R-squared is very close to the normal R-squared, this is
+another sign suggesting our chosen predictors fit well the model. There is no big
+difference between R-squared and adjusted R-squared, it
+indicates our model is not overly complex and likely generalizes well to
+new data, it's no affaccted by overfitting.
 
 Let's see graphically how it looks
 
-1. Residuals vs. Fitted Values
-The Residuals vs. Fitted Values plot is useful to check the linearity and for detecting heteroscedasticity. Since the residuals are scattered randomly around zero we can say that the regression is linear.
-In addition, there is homoscedasticity in our model, since the variance of the residuals (errors) in our regression model is relatively constant across all predicted values.
+### Residuals vs. Fitted Values 
 
-X-axis: Fitted values (the values predicted by your model)
-Y-axis: Residuals (the difference between true values and the model's predictions)
+This plot is useful to check the linearity and for detecting heteroscedasticity.
+Since most of the residuals are scattered randomly around zero we can say
+that there is linearity between residuals and fitted values. 
 ```{r}
-ggplot(mod12, aes(x = fitted.values(mod12), y = residuals(mod12))) +
+ggplot(mod6, aes(x = fitted.values(mod6), y = residuals(mod6))) +
 geom_point() +
-geom_hline(yintercept = 0, linetype = "dashed") + 
+geom_hline(yintercept = 0, linetype = "dashed",colour = 'blue') + 
 labs(x = "Fitted Values", y = "Residuals", title = "Residuals vs Fitted Values")
 ```
 
-2. Residuals vs Individual Predictors
+### Normal Q-Q Plot of Residuals 
+
+The Q-Q Plot shows that residuals closely follow the diagonal line, which indicates that the residuals likely follow a normal distribution.
 ```{r}
-# NOT WORKING
-#predictors <- c("Restaurants", "Markets", "MonthlyRent", "ApartmentPrice")
-#for (predictor in predictors) {
-#  ggplot(mod12, aes(x = basket3[, predictor], y = residuals(mod12))) +
-#  geom_point() +
-#  geom_smooth() + 
-#  labs(x = predictor, y = "Residuals", title = paste("Residuals vs", predictor))
-#}
+ggplot(mod6, aes(sample = residuals(mod6))) +
+stat_qq() + 
+stat_qq_line(colour = 'blue') +
+labs(x = "Theoretical distribution", y = "Observed data", title = "Normal Q-Q Plot of Residuals")
+```
+However, there are a few deviations from the ideal straight line:
+- The tails of the distribution seem to be slightly heavier than normal. This means that there are a few more data points than expected in the extreme tails, which could indicate the presence of outliers or non-linear relationships in your data.
+- There seems to be a slight curvature in the center of the plot, with some points deviating above and below the line. This could indicate that there are some systematic patterns in the residuals that are not being captured by your model
+
+### Residuals vs Individual Predictors
+
+```{r}
 library(patchwork)
 
-plot1 <- ggplot(mod12, aes(x = basket3$Restaurants, y = residuals(mod12))) +
+plot1 <- ggplot(mod6, aes(x = basket3$Restaurants, y = residuals(mod6))) +
   geom_point() +
   geom_smooth() + 
   labs(x = "Restaurants", y = "Residuals", title = paste("Residuals vs Restaurants"))
 
-plot2 <- ggplot(mod12, aes(x = basket3$Markets, y = residuals(mod12))) +
+plot2 <- ggplot(mod6, aes(x = basket3$Markets, y = residuals(mod6))) +
   geom_point() +
   geom_smooth() + 
   labs(x = "Markets", y = "Residuals", title = paste("Residuals vs Markets"))
 
-plot3 <- ggplot(mod12, aes(x = basket3$MonthlyRent, y = residuals(mod12))) +
+plot3 <- ggplot(mod6, aes(x = basket3$MonthlyRent, y = residuals(mod6))) +
   geom_point() +
   geom_smooth() + 
   labs(x = "MonthlyRent", y = "Residuals", title = paste("Residuals vs MonthlyRent"))
 
-plot4 <- ggplot(mod12, aes(x = basket3$ApartmentPrice, y = residuals(mod12))) +
+plot4 <- ggplot(mod6, aes(x = basket3$Salaries, y = residuals(mod6))) +
   geom_point() +
   geom_smooth() + 
-  labs(x = "ApartmentPrice", y = "Residuals", title = paste("Residuals vs ApartmentPrice"))
+  labs(x = "Salaries", y = "Residuals", title = paste("Residuals vs Salaries"))
 
 combined_plot <- plot1 + plot2 + plot3 + plot4 + facet_wrap(~ ., nrow = 2)
 
 print(combined_plot)
 ```
-
-3. Normal Q-Q Plot of Residuals
-The residuals closely follow the diagonal line, which indicates that the residuals likely follow a normal distribution.
-```{r}
-ggplot(mod12, aes(sample = residuals(mod12))) +
-stat_qq() + 
-stat_qq_line() +
-labs(title = "Normal Q-Q Plot of Residuals")
-```
-
-
-How to Investigate Further? 
-Cross-Validation: See how the model performs on new data to assess its generalizability.
-

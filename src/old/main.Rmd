@@ -1,0 +1,975 @@
+---
+title: "Cost of Living Analysis"
+output: html_document
+---
+
+Basic chunk
+```{r}
+```
+
+To hide the code while plotting chart
+```{r pressure, echo=FALSE}
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Dataset
+```{}
+https://www.kaggle.com/datasets/mvieira101/global-cost-of-living
+```
+
+Set working dir (set yours!)
+```{r}
+setwd("/Users/gianmarcofistani/Desktop/BABD/courses/9_FOS/6_projects/cost-of-living-analysis/src")
+```
+
+Import libraries
+```{r}
+#install.packages("dplyr")
+library(dplyr)
+
+#Imputation with Mean of data grouped by country
+library(tidyverse)
+library(dplyr)
+library(magrittr) #so we can use the pipe operator %>%
+```
+
+
+Create a table to store columns description
+```{r}
+columns_des <- c(
+"meal_inexpensive_restaurant"
+,"meal_for_two_people_mid_range_estaurant_three_course"
+,"mcdonalds"
+,"domestic_beer_05_liter_draught"
+,"imported_beer_03_liter_bottle"
+,"cappucino_restaurants"
+,"coke_03l_bottle_restaurants"
+,"water_03l_restaurants"
+,"milk_1l"
+,"fresh_white_bread_500g"
+,"white_rice_1kg"
+,"eggs_x12"
+,"local_cheese_1kg"
+,"chicken_fillets_1kg"
+,"beef_round_1kg"
+,"apple_1kg"
+,"banana_1kg"
+,"oranges_1kg"
+,"tomato_1kg"
+,"potato_1kg"
+,"onion_1kg"
+,"lettuce_1head"
+,"water_1l_and_half_bottle_market"
+,"wine_mid_range_market"
+,"domestic_beer_05l_market"
+,"imported_beer_03l_market"
+,"cigarettes_20pack_malboro"
+,"one_way_ticket_local_transport"
+,"monthly_pass_regular_price"
+,"taxi_start_normal_tariff"
+,"taxi_1km_normal_tariff"
+,"taxi_1h_waiting_normal_tariff"
+,"gasoline_1l"
+,"volkswagen_golf_1400_90kw_trendline"
+,"toyota_corolla_sedan_1600_97kw_comfort"
+,"basic_electricity_heating_cooling_water_garbage_for_85m2_apartment"
+,"1min_prepaid_mobile_tariff_local"
+,"internet_60mbps"
+,"fitness_club_1month"
+,"tennis_court_1h"
+,"cinema"
+,"preschool_private_1month"
+,"primary_school_international_1year"
+,"jeans_basic"
+,"summer_dress_in_chain_store"
+,"shoes_nike_running_mid_range"
+,"shoes_leather_business"
+,"apartment_1bedroom_city_center"
+,"apartment_1bedroom_outside_center"
+,"apartment_3bedrooms_city_center"
+,"apartment_3bedrooms_outside_center"
+,"price_per_square_meter_to_buy_apartment_city_center"
+,"price_per_square_meter_to_buy_apartment_outside_center"
+,"average_monthly_net_salary"
+,"mortage_intereset_rate_percentage_1year_for_20years_fixed_rate"
+,"data_quality")
+```
+
+Function that returns the column des
+```{r}
+getColumnDes <- function(col) {
+  tmp <- gsub("[^0-9]", "", col)
+  tmp2 <- columns_des[as.integer(tmp)]
+  return(tmp2)
+}
+```
+
+```{r}
+getColumnDes('x1')
+```
+
+Load data
+```{r}
+original_data <- read.csv("./../data/cost-of-living-updated.csv")
+
+#data_good <- subset(data, data_quality == 1)
+#data_bad = filter(data,data_quality == 0)
+```
+
+```{r}
+View(original_data)
+```
+
+```{r}
+col_imputed_country <- original_data
+
+col_imputed_country <- col_imputed_country %>%
+  group_by(country) %>%
+  mutate(across(where(is.numeric), ~ifelse(is.na(.), mean(., na.rm = TRUE), .))) #Group by 'country' and calculate mean for each numeric column
+
+clean_data <- na.omit(col_imputed_country) #drop remaining missing values
+
+#sum(is.na(data)) #0
+#dim(data) # obs./row:4849  variables/columns:58 -> little rows/columns lost
+#summary(data) #compared to summary(col_imputed) -> distribution and relationships are impacted as it now pulls towards each country avg. 
+#length(unique(data$country)) #153 distinct countries -> 62 lost countries
+```
+
+```{r}
+View(clean_data)
+```
+
+```{r}
+grouped_data <- clean_data %>%
+  group_by(country) %>%
+  summarise(
+    x1 = mean(x1),
+    x2 = mean(x2),
+    x3 = mean(x3),
+    x4 = mean(x4),
+    x5 = mean(x5),
+    x6 = mean(x6),
+    x7 = mean(x7),
+    x8 = mean(x8),
+    x9 = mean(x9),
+    x10 = mean(x10),
+    x11 = mean(x11),
+    x12 = mean(x12),
+    x13 = mean(x13),
+    x14 = mean(x14),
+    x15 = mean(x15),
+    x16 = mean(x16),
+    x17 = mean(x17),
+    x18 = mean(x18),
+    x19 = mean(x19),
+    x20 = mean(x20),
+    x21 = mean(x21),
+    x22 = mean(x22),
+    x23 = mean(x23),
+    x24 = mean(x24),
+    x25 = mean(x25),
+    x26 = mean(x26),
+    x27 = mean(x27),
+    x28 = mean(x28),
+    x29 = mean(x29),
+    x30 = mean(x30),
+    x31 = mean(x31),
+    x32 = mean(x32),
+    x33 = mean(x33),
+    x34 = mean(x34),
+    x35 = mean(x35),
+    x36 = mean(x36),
+    x37 = mean(x37),
+    x38 = mean(x38),
+    x39 = mean(x39),
+    x40 = mean(x40),
+    x41 = mean(x41),
+    x42 = mean(x42),
+    x43 = mean(x43),
+    x44 = mean(x44),
+    x45 = mean(x45),
+    x46 = mean(x46),
+    x47 = mean(x47),
+    x48 = mean(x48),
+    x49 = mean(x49),
+    x50 = mean(x50),
+    x51 = mean(x51),
+    x52 = mean(x52),
+    x53 = mean(x53),
+    x54 = mean(x54),
+    x55 = mean(x55)
+  )
+```
+
+```{r}
+View(grouped_data)
+```
+
+```{r}
+tmp_headers                <- grouped_data[,1]
+tmp_restaurants            <- cbind(headers,grouped_data[,2:9])
+tmp_markets                <- cbind(headers,grouped_data[,10:28])
+tmp_transportation         <- cbind(headers,grouped_data[,29:34])
+tmp_utilities              <- cbind(headers,grouped_data[,37])
+tmp_sports_and_leisure     <- cbind(headers,grouped_data[,40:42])
+tmp_childcare              <- cbind(headers,grouped_data[,43:44])
+tmp_clothing_and_shoes     <- cbind(headers,grouped_data[,45:48])
+tmp_rent_per_month         <- cbind(headers,grouped_data[,49:52])
+tmp_buy_apartment_price    <- cbind(headers,grouped_data[,53:54])
+tmp_salaries_and_financing <- cbind(headers,grouped_data[,55:56])
+```
+
+```{r}
+View(tmp_transportation)
+View(tmp_utilities)
+```
+
+## Descriptive statistics
+```{r}
+#summary(tmp_restaurants)
+```
+
+## Calculate average values
+```{r}
+#headers                <- grouped_data[,1]
+#restaurants            <- grouped_data[,2:9]
+#markets                <- grouped_data[,10:28]
+#transportation         <- grouped_data[,29:34]
+#utilities              <- grouped_data[,35:39]
+#sports_and_leisure     <- grouped_data[,40:42]
+#childcare              <- grouped_data[,43:44]
+#clothing_and_shoes     <- grouped_data[,45:48]
+#rent_per_month         <- grouped_data[,49:52]
+#buy_apartment_price    <- grouped_data[,53:54]
+#salaries_and_financing <- grouped_data[,55:56]
+```
+
+```{r}
+headers                <- grouped_data[,1]
+restaurants            <- grouped_data[,2:4]
+markets                <- grouped_data[,10:28]
+transportation         <- grouped_data[,c(29,30,32,34)]
+utilities              <- grouped_data[,37]
+sports_and_leisure     <- grouped_data[,40:42]
+childcare              <- grouped_data[,43:44]
+clothing_and_shoes     <- grouped_data[,45:48]
+rent_per_month         <- grouped_data[,49:52]
+buy_apartment_price    <- grouped_data[,53:54]
+salaries_and_financing <- grouped_data[,55]
+```
+
+```{r}
+View(cbind(headers,salaries_and_financing))
+```
+
+```{r}
+restaurants_avg            <- round(rowMeans(restaurants), digits=2)
+markets_avg                <- round(rowMeans(markets),digits=2)
+transportation_avg         <- round(rowMeans(transportation),digits=2)
+utilities_avg              <- round(rowMeans(utilities),digits=2)
+sports_and_leisure_avg     <- round(rowMeans(sports_and_leisure),digits=2)
+childcare_avg              <- round(rowMeans(childcare),digits=2)
+clothing_and_shoes_avg     <- round(rowMeans(clothing_and_shoes),digits=2)
+rent_per_month_avg         <- round(rowMeans(rent_per_month),digits=2)
+buy_apartment_price_avg    <- round(rowMeans(buy_apartment_price),digits=2)
+salaries_and_financing_avg <- round(rowMeans(salaries_and_financing),digits=2)
+```
+
+```{r}
+View(cbind(headers,salaries_and_financing_avg))
+```
+
+## Cost of Living Index
+This index indicates the relative prices of consumer goods like groceries, restaurants, transportation, and utilities. 
+```{r}
+basket <- data.frame(
+   Restaurants          = restaurants_avg
+  ,Markets              = markets_avg
+  ,Transports       = transportation_avg
+  ,Utilities            = utilities_avg
+  ,Entertainment     = sports_and_leisure_avg
+  ,Childcare            = childcare_avg
+  ,Clothing     = clothing_and_shoes_avg
+  ,MonthlyRent         = rent_per_month_avg
+  ,ApartmentPrice    = buy_apartment_price_avg
+  ,Salaries = salaries_and_financing_avg
+)
+
+coli <- (
+  basket$Restaurants*0.10 + 
+  basket$Markets*0.08 + 
+  basket$Transports*0.08 + 
+  basket$Utilities*0.06 + 
+  basket$Entertainment*0.05 + 
+  basket$Childcare*0.07 + 
+  basket$Clothing*0.05 + 
+  basket$MonthlyRent*0.15 +
+  basket$ApartmentPrice*0.20 + 
+  basket$Salaries*0.16
+)/10
+
+basket2 <- data.frame(basket, COLI = coli)
+#View(basket2)
+
+basket3 = cbind(headers,basket2)
+```
+
+```{r}
+View(basket3)
+```
+
+# MAP PLOT
+```{r}
+library(rnaturalearth)
+library(ggplot2)
+
+df <- data.frame(
+  country = c("USA", "Canada", "Mexico", "UK", "Germany"),
+  coli = c(100, 90, 80, 110, 95)
+)
+
+# Get world map data
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+# Merge country data with map data
+merged_data <- merge(world, df, by.x = "name", by.y = "country", all.x = TRUE)
+
+# Plot map
+ggplot(merged_data) +
+  geom_sf(aes(fill = coli)) +
+  scale_fill_gradient(name = "COLI") +
+  labs(title = "Cost of Living Index by Country") +
+  theme_void()
+```
+
+
+## QUESTIONS
+1) Correlation analysis: Identifying relationships with predictor variables via correlation matrix and scatter plots. 
+
+2) Regression models (linear and multiple regression): Examining factors contributing to COLI variations.
+*Multiple linear regression should be considered when you believe that the outcome variable is influenced by more than one predictor variable.
+
+## Multivariate Analysis
+```{r}
+tmp <- data.frame(basket3[,2:11])
+```
+
+Scatterplot
+```{r}
+pairs(tmp)
+```
+Boxplot
+```{r}
+boxplot(tmp, col='gold')
+```
+
+## PCA
+Since our dataset containts is high-dimensional data, thus it has a large number of features (columns), PCA can help reduce the dimensionality of the dataset while retaining most of the important information.
+```{r}
+# save the first two columns
+data.label <- basket_avg_v3[,1:2]
+
+# remove the first two columns, which are categorical
+data <- basket_avg_v3[,-(1:2)]
+#head(data)
+
+n <- dim(data)[1] #rows
+p <- dim(data)[2] #columns
+
+# Scatterplot matrix
+#pairs(data, las=2, pch=19)
+
+# Boxplot
+#boxplot(data, las=2, col='gold')
+
+# Check if the variability of the some elements is higher than that of the others. This may influence the PCA
+
+boxplot(scale(x=data,center = T, scale=F), las=2, col='gold')
+```
+```{r}
+# scale() -> standardize data
+# prcomp() -> pca
+
+# Perform PCA
+#pca_result <- prcomp(data, scale. = TRUE)  # Standardize data (optional)
+
+# Print the summary of PCA
+#summary(pca_result)
+
+# Plot the scree plot to visualize the variance explained by each principal component
+#plot(pca_result, type = "l", main = "Scree Plot")
+
+# Biplot to visualize the relationship between variables and principal components
+#biplot(pca_result)
+```
+
+PCA on standardized variables
+```{r}
+data.sd <- scale(data)
+data.sd <- data.frame(data.sd)
+
+head(data.sd)
+```
+```{r}
+pairs(data.sd)
+```
+
+```{r}
+pc.data <- princomp(data.sd, scores=T)
+pc.data
+summary(pc.data)
+```
+
+```{r}
+
+```
+
+## Cost of Living Index per continent
+1) assign each country its own continent
+```{r}
+
+```
+
+## What factors contribute to variations in COLI across cities?
+
+- Is there a relationship between COLI and restaurants/markets/transportation/utilities/...?
+- How strong is this relationship?
+- How accurately can we predict the changes in COLI in relation to consumers-goods changes?
+- Is the relationship linear?
+
+## Simple Linear regression
+```{r}
+# Scatterplot matrix
+tmp <- basket3[,-1]
+tmp <- tmp[,1:10]
+pairs(tmp) 
+```
+
+It displays the relationships between 10 cost-of-living factors for different cities. Each individual plot within the grid shows the values for two of the factors, with each dot representing a different city.
+
+Here are some specific observations:
+
+- Positive correlations:
+	- Restaurants, Markets, and Clothing costs appear to be positively correlated with each other, meaning that cities with higher costs in one category tend to have higher costs in the others as well.
+	- Transports and Utilities costs also show a positive correlation, indicating that cities with higher transportation costs tend to have higher utility costs as well.
+	- Monthly Rent and Apartment Prices are very strongly positively correlated, as expected, since they both represent housing costs.
+	- Salaries generally show a positive correlation with most cost factors, though it is weaker for Childcare and Entertainment. This suggests that cities with higher overall living costs also tend to have higher salaries.
+
+- Weaker or no correlations:
+	- There is no clear correlation between Childcare and other cost factors.
+	- The correlation between Entertainment and other costs is also weak and inconsistent.
+
+- Other interesting patterns:
+	- The plot of Markets vs Restaurants shows a distinct cluster of points in the lower left corner, representing cities with low costs in both categories.
+	- The plot of Transports vs Utilities has a few outliers with very high transportation costs compared to their utility costs.
+
+Overall, the scatterplot matrix provides a useful way to visualize the relationships between different cost-of-living factors in a dataset of cities. By examining these relationships, you can gain insights into the factors that contribute to the overall cost of living in different locations.
+ 
+```{r}
+View(basket3)
+```
+ 
+# 1) Simple Linear Regression: COLI VS Average Restaurants Costs
+Model: COLI = beta_0 + beta_1 * Restaurants + Eps
+
+```{r}
+#coli_and_restaturnats_tmp = cbind(headers,coli_and_restaturnats)
+#write.csv(coli_and_restaturnats_tmp, "coli_and_restaturnats.csv", row.names = FALSE)
+```
+
+```{r}
+library(caTools)
+coli_and_restaturnats <- basket3[,c("Restaurants", "COLI")]
+split = sample.split(coli_and_restaturnats$COLI, SplitRatio = 0.7)
+
+trainingset = subset(coli_and_restaturnats, split == TRUE)
+testset = subset(coli_and_restaturnats, split == FALSE)
+```
+
+```{r}
+ggplot(trainingset, aes(x = Restaurants, y = COLI)) +
+geom_point() +
+geom_smooth(method = "lm", se = FALSE) +  # Adds a trend line
+labs(
+  x = "Average Restaurant Cost",
+  y = "COLI", 
+  title = "COLI vs. Average Restaurant Cost"
+) 
+```
+
+There appears to be a positive correlation between average restaurant cost and COLI. This means that cities with a higher COLI tend to have higher average restaurant costs. However, the correlation is not perfect, and there are some cities that deviate from the trend (the outlier with high COLI is the Somalia). Points scattered above and below the trend line represent cities that are outliers, meaning their restaurant costs are higher or lower than expected based on their COLI. There may be clusters of points, suggesting groups of cities with similar characteristics. For example, there might be a cluster of cities with low COLI and low restaurant costs, or a cluster of cities with high COLI and high restaurant costs.
+
+```{r}
+mod1 <- lm(formula = COLI ~ Restaurants, data = trainingset)
+summary(mod1)
+```
+Residuals: Each residual in the “Residuals” section denotes the difference between the actual COLI and predicted values. These values are unique to each observation in the data set. For instance, the observation 'min' has a residual of -157.92.
+
+Coefficients: Linear regression coefficients are revealed within the contents of this section
+
+(Intercept): The estimated COLI when Restaurants (average cost of restaurant) is zero is 30.768, which represents the intercept for this case.
+
+Restaurants: For every COLI point gained, the expected COLI is estimated to increase by 5.113 units according to the coefficient for Restaurants. This coefficient value suggests that each additional cost in estaurant has a (significant) low impact on the estimated COLI.
+
+Estimate:The model’s estimated coefficients can be found in this column
+
+Std. Error: “More precise estimates” can be deduced from smaller standard errors that are a gauge of the ambiguity that comes along with coefficient estimates.
+
+t value: The coefficient estimate’s standard error distance from zero is measured by the t-value. Its purpose is to examine the likelihood of the coefficient being zero by testing the null hypothesis. A higher t-value’s absolute value indicates a higher possibility of statistical significance pertaining to the coefficient.
+
+Pr(>|t|): This column provides the p-value associated with the t-value. The p-value indicates the probability of observing the t-statistic (or more extreme) under the null hypothesis that the coefficient is zero. In this case, the p-value for the intercept is 0.189, and for Restaurants, it is 6.86e-06.
+
+Signif. codes: These codes indicate the level of significance of the coefficients.
+
+Residual standard error: This is a measure of the variability of the residuals. In this case, it’s 130.6, which represents the typical difference between the actual COLI and the predicted COLI.
+
+Multiple R-squared: R-squared (R²) is a measure of the goodness of fit of the model. It represents the proportion of the variance in the dependent variable that is explained by the independent variable(s). In this case, the R-squared is 0.1775, which means that approximately 17.75% of the variation in salaries can be explained by years of experience.
+
+Adjusted R-squared: The adjusted R-squared adjusts the R-squared value based on the number of predictors in the model. It accounts for the complexity of the model. In this case, the adjusted R-squared is 0.1696 .
+
+F-statistic: The F-statistic is used to test the overall significance of the model. In this case, the F-statistic is 22.45 with 1 and 104 degrees of freedom, and the associated p-value is 6.86e-06. This p-value suggests that the model as a whole is statistically significant.
+
+
+In summary, this linear regression analysis suggests that there is a significant relationship between average restaurant costs (Restaurants) and coli (COLI). The model explains approximately 17.75% of the variance in COLI, and both the intercept and the coefficient for "Restaurants" are statistically significant at the 0.01 and 0.05 significance levels, respectively (?).
+
+
+
+# Predict values using predict function
+```{r}
+# Create a data frame with new input values
+new_data <- data.frame(Restaurants = c(70.0, 72.5,69.0,74.0))
+
+# Predict using the linear regression model
+predicted_restaurant_costs <- predict(mod1, newdata = new_data)
+
+# Display the predicted salaries
+print(predicted_restaurant_costs)
+```
+
+# Visualising the Training set results
+```{r}
+ggplot() + 
+geom_point(
+aes(x = trainingset$Restaurants, y = trainingset$COLI), colour = 'red') +
+geom_line(aes(x = trainingset$Restaurants, y = predict(mod1, newdata = trainingset)), colour = 'blue') +
+ggtitle('COLI vs. Average Restaurants Costs (Training set)') +
+xlab('Average Restaurants Costs') +
+ylab('COLI')
+```
+
+# Visualising the Test set results
+```{r}
+ggplot() +
+geom_point(aes(x = testset$Restaurants, y = testset$COLI), colour = 'red') +
+geom_line(aes(x = trainingset$Restaurants, y = predict(mod1, newdata = trainingset)), colour = 'blue') +
+ggtitle('COLI vs. Average Restaurants Costs (Test set)') +
+xlab('Average Restaurants Costs') +
+ylab('COLI')
+```
+
+# Correlation
+- A positive value close to 1 indicates a strong positive correlation.
+- A negative value close to -1 indicates a strong negative correlation.
+- A value around 0 indicates a weak or no correlation.
+```{r}
+mod1_correlation <- cor(coli_and_restaturnats$Restaurants, coli_and_restaturnats$COLI)
+print(mod1_correlation) 
+```
+
+# Identify outliers with Standardized Residuals method
+- Standardized Residuals: Represent the number of standard deviations a data point is away from the regression line.
+- Outliers: Extreme standardized residuals suggest points that the model doesn't fit well.
+```{r}
+model <- lm(coli_and_restaturnats$COLI ~ coli_and_restaturnats$Restaurants, data = coli_and_restaturnats)
+
+std_residuals <- rstandard(model)
+
+outlier_indices <- which(abs(std_residuals) > 2)  # Adjust the threshold if needed
+
+outliers <- coli_and_restaturnats[outlier_indices, ] 
+print(outliers)
+
+ggplot(coli_and_restaturnats, aes(x = Restaurants, y = COLI)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  geom_point(data = outliers, color = "red") 
+  #labs(
+  #  x = "Average Restaurant Cost",
+  #  y = "COLI", 
+  #  title = "COLI vs. Average Restaurant Cost"
+  #) 
+```
+
+Cities with a higher cost of living index (COLI) tend to have slightly higher average restaurant costs. However, the trend is not very strong, we have weak positive correlation. In addition, the correlation coefficient of 0.4 indicates that while there's a tendency for these factors to rise together, the relationship isn't very reliable. There will be several cities (outliers) that deviate from this pattern.
+
+COLI is not the only factor: The weak correlation tells us that COLI alone doesn't explain much of the variation in restaurant prices. Other factors could be highly influential, such as:
+- Tourism: Cities with high tourist traffic may have higher restaurant costs regardless of COLI.
+- Local Economic Conditions: Specific economic policies or the city's income level might have a bigger impact on restaurant prices.
+- Type of Cuisine: The prominence of expensive, high-end restaurants vs. affordable local eateries could skew results.
+
+You can't reliably use just a city's COLI to predict the average cost of eating out. A city with a high COLI might have surprisingly affordable restaurants, or vice versa (Limited predictability).
+To understand restaurant costs in a city, you need to consider additional variables beyond the overall COLI.
+
+
+```{r}
+mod1_coef <- coefficients(mod1)
+mod1_residuals <- residuals(mod1)
+mod1_fitted <- fitted(mod1)
+
+plot(
+  coli_and_restaturnats$Restaurants, 
+  coli_and_restaturnats$COLI, 
+  asp=1,
+  cex=0.75
+)
+
+abline(mod1_coef)
+
+points(
+  coli_and_restaturnats$Restaurants, 
+  mod1_fitted, 
+  col='red', 
+  pch=19)
+
+legend(
+  'bottomright',
+  c('Obs.','Fit','Reg. line'),
+  col=c('black','red','black'),
+  lwd=c(1,1,1),
+  lty=c(-1,-1,1),
+  pch=c(c(1,19,-1))
+)
+
+title(main='Linear regression (COLI vs Average Restaurant Costs)')
+```
+
+# 2) Simple Linear Regression: COLI VS Average Market Costs
+```{r}
+coli_and_markets <- basket3[,c("Markets", "COLI")]
+
+ggplot(coli_and_markets, aes(x = Markets, y = COLI)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +  # Adds a trend line
+  labs(
+    x = "Average Markets Cost",
+    y = "COLI", 
+    title = "COLI vs. Average Markets Cost") 
+
+# Regression
+mod2 <- lm(coli_and_markets$COLI ~ coli_and_markets$Markets)
+
+summary(mod2)
+```
+
+Correlation
+```{r}
+mod2_correlation <- cor(coli_and_markets$Markets, coli_and_markets$COLI)
+print(mod2_correlation) 
+```
+
+# 3) Simple Linear Regression: COLI VS Average Transports Costs
+```{r}
+coli_and_transportation <- basket3[,c("Transports", "COLI")]
+
+ggplot(coli_and_transportation, aes(x = Transports, y = COLI)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +  # Adds a trend line
+  labs(
+    x = "Average Markets Cost",
+    y = "COLI", 
+    title = "COLI vs. Average Transport Cost")
+
+# Regression
+mod3 <- lm(coli_and_transportation$COLI ~ coli_and_transportation$Transports)
+summary(mod3)
+```
+
+Correlation
+```{r}
+mod3_correlation <- cor(coli_and_transportation$Transports, coli_and_transportation$COLI)
+print(mod3_correlation) 
+```
+
+# 4) Simple Linear Regression: COLI VS Average Utilities Costs
+```{r}
+coli_and_utilities <- basket3[,c("Utilities", "COLI")]
+
+ggplot(coli_and_utilities, aes(x = Utilities, y = COLI)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +  # Adds a trend line
+  labs(
+    x = "Average Utilities Cost",
+    y = "COLI", 
+    title = "COLI vs. Average Utilities Cost")
+
+# Regression
+mod4 <- lm(coli_and_utilities$COLI ~ coli_and_utilities$Utilities)
+summary(mod4)
+```
+
+Correlation
+```{r}
+mod4_correlation <- cor(coli_and_utilities$Utilities, coli_and_utilities$COLI)
+print(mod4_correlation) 
+```
+
+# 5) Simple Linear Regression: COLI VS Average Entertainment Costs
+```{r}
+coli_and_entertainment <- basket3[,c("Entertainment", "COLI")]
+
+ggplot(coli_and_entertainment, aes(x = Entertainment, y = COLI)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +  # Adds a trend line
+  labs(
+    x = "Average Entertainment Cost",
+    y = "COLI", 
+    title = "COLI vs. Average Entertainment Cost")
+
+# Regression
+mod5 <- lm(coli_and_entertainment$COLI ~ coli_and_entertainment$Entertainment)
+summary(mod5)
+```
+
+Correlation
+```{r}
+mod5_correlation <- cor(coli_and_entertainment$Entertainment, coli_and_entertainment$COLI)
+print(mod5_correlation) 
+```
+
+# 6) Simple Linear Regression: COLI VS Average Childcare Costs
+```{r}
+```
+
+# 7) Simple Linear Regression: COLI VS Average Clothing Costs
+```{r}
+```
+
+# 8) Simple Linear Regression: COLI VS Average MonthlyRent Costs
+```{r}
+```
+
+# 9) Simple Linear Regression: COLI VS Average ApartmentPrice Costs
+```{r}
+```
+
+# 10) Simple Linear Regression: COLI VS Average Salaries Costs
+```{r}
+coli_and_salaries <- basket3[,c("Salaries", "COLI")]
+
+ggplot(coli_and_salaries, aes(x = Salaries, y = COLI)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +  # Adds a trend line
+  labs(
+    x = "Average Salaries Cost",
+    y = "COLI", 
+    title = "COLI vs. Average Salaries Cost")
+
+# Regression
+mod10 <- lm(coli_and_salaries$COLI ~ coli_and_salaries$Salaries)
+summary(mod10)
+```
+
+Correlation
+```{r}
+mod10_correlation <- cor(coli_and_salaries$Salaries, coli_and_salaries$COLI)
+print(mod10_correlation) 
+```
+
+################################################################################
+
+```{r}
+cols <- names(basket3)
+cols <- cols[-1] #remove country column
+cols <- cols[1:10] #remove COLI column
+
+for (col in cols) {
+  tmp_data <- basket3[,c(col, "COLI")]
+  #print(tmp_plot)
+
+  ggplot(tmp_data, aes(x = Salaries, y = COLI)) +
+    geom_point() +
+    geom_smooth(method = "lm", se = FALSE) +
+    labs(
+      x = col,
+      y = "COLI")
+}
+```
+
+```{r}
+cols <- names(basket3)
+cols <- cols[-1] #remove country column
+cols <- cols[1:10] #remove COLI column
+
+for (col in cols) {
+  idx <- which(colnames(basket) == col) 
+  tmp <- basket[,idx]
+  cor <- cor(tmp, basket3$COLI)
+  cat(col,cor,'\n')
+}
+```
+
+################################################################################
+
+# Heatmap
+```{r}
+tmp_hm <- basket3[basket3$country == 'Italy' | basket3$country == 'United States',]
+tmp_hm <- tmp_hm[-1]
+#print(tmp_hm)
+
+matrix_data <- as.matrix(tmp_hm)
+heatmap(matrix_data, col = cm.colors(256), scale = "column", xlab = "Columns", ylab = "Rows", main = "Heatmap Example")
+```
+
+
+```{r}
+#Option 1
+par(mfrow = c(3, 4)) 
+
+#Option 2 - for ggplot2 plots or other
+
+library(patchwork) 
+childcare_plot + clothing_plot + rent_plot + salary_plot #plot_name + plot_name2
+```
+
+# Multiple Linear Regression
+
+## Model: coli = B0 + B1*Restaurants + B2*Markets + B3*Transportation + B4*Utilities
+```{r}
+model <- lm(basket_avg_v3$COLI ~ 
+  basket_avg_v3$RestaurantsAvg + 
+  basket_avg_v3$MarketsAvg + 
+  basket_avg_v3$TransportationAvg + 
+  basket_avg_v3$UtilitiesAvg, 
+  data = basket_avg_v3
+)
+
+# Print summary of the model
+summary(model)
+```
+
+
+
+
+
+```{r}
+#basket3$country <- as.numeric(factor(basket3$country)) #convert the country name into a index
+#print(basket3)
+basket3 <- basket3[-1]
+#print(basket3)
+```
+
+```{r}
+# Splitting the dataset into the Training set and Test set
+set.seed(123)
+split = sample.split(basket3$COLI, SplitRatio = 0.8)
+training_set = subset(basket3, split == TRUE)
+test_set = subset(basket3, split == FALSE)
+
+# Feature Scaling
+# training_set = scale(training_set)
+# test_set = scale(test_set)
+
+# Fitting Multiple Linear Regression to the Training set
+regressor = lm(formula = COLI ~ ., data = training_set)
+
+# Predicting the Test set results
+y_pred = predict(regressor, newdata = test_set)
+```
+
+```{r}
+print(regressor)
+```
+
+```{r}
+print(y_pred)
+```
+
+Dependent variable: COLI is what we're trying to predict.
+Independent variables: Restaurants,Markets,Transports,Utilities,Entertainment,Childcare,Clothing,MonthlyRent,ApartmentPrice and Salaries are our predictors.
+```{r}
+mod11 <- lm(formula = COLI ~ Restaurants + Markets + Transports + Utilities + Entertainment + Clothing + MonthlyRent + ApartmentPrice + Salaries, data = basket3)
+summary(mod11)
+```
+
+The model seems to go in overfitting (our model has fit the training data too closely, likely capturing noise or patterns specific to that dataset instead of the true underlying relationship).
+
+How to address it:
+- Get more data: If possible, collecting more data points is often the best solution.
+- Regularization: Techniques like Ridge Regression (L2) or Lasso Regression (L1) penalize overly complex models and can help prevent overfitting.
+- Remove features: Check for strongly correlated predictors or those with little predictive power. Consider dimensionality reduction techniques like PCA.
+- Cross-validation: Use cross-validation to get a more realistic estimate of how your model might perform on new data.
+
+```{r}
+# Logistic regression
+set.seed(123)  # For reproducibility 
+outcome <- sample(c(0, 1), size = 20, replace = TRUE)
+predictor <- outcome + rnorm(20, sd = 0.1)  # Near-perfect predictor
+
+model <- glm(outcome ~ predictor, family = "binomial") 
+summary(model) 
+```
+
+-----
+Interpreting the summary:
+- Coefficients: Shows how a one-unit change in each predictor is associated with a change in monthly rent (holding other predictors constant).
+- p-values: Indicate the statistical significance of each predictor.
+- R-squared: Indicates the percentage of variation in monthly rent explained by the model.
+
+Considerations
+- Assumptions: Before heavily relying on the model, check the assumptions of linear regression (linearity, normality of residuals, etc.).
+- Potential interactions: Explore if interactions between predictors might improve the model (e.g., cost_of_utilities * salary).
+
+```{r}
+library(car) # For checking assumptions
+vif(mod11)   # Check for multicollinearity among predictors
+par(mfrow = c(2, 2))
+plot(mod11)  # Visualize residual plots
+```
+
+
+
+# Same plot with legacy R library
+```{r}
+mod12 <- lm(formula = COLI ~ Restaurants + Markets + MonthlyRent + ApartmentPrice, data = basket3)
+par(mfrow = c(2, 2))  # Arrange plots in a 2x2 grid
+plot(mod12, which = 1) # Residuals vs Fitted plot
+plot(mod12, which = 2) # Normal Q-Q plot
+plot(mod12, which = 3) # Scale-Location plot (Square Root of Standardized Residuals vs Fitted values)
+plot(mod12, which = 4) # Cook's distance plot
+```
+
+
+```{r}
+library(patchwork)
+
+plot1 <- ggplot(data = basket3, aes(x = Restaurants, y = residuals(mod12))) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  ggtitle("Residuals vs Restaurants")
+
+plot2 <- ggplot(data = basket3, aes(sample = residuals(mod12))) +
+  stat_qq() +
+  ggtitle("Normal Q-Q Plot")
+
+plot3 <- ggplot(data = basket3, aes(x = fitted(mod12), y = sqrt(abs(residuals(mod12))))) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  ggtitle("Scale-Location Plot")
+
+plot4 <- ggplot(data = basket3, aes(x = hatvalues(mod12), y = cooks.distance(mod12))) +
+  geom_point() +
+  ggtitle("Cook's Distance Plot")
+
+# Combine plots using facet_wrap
+combined_plot <- plot1 + plot2 + plot3 + plot4 + facet_wrap(~ ., nrow = 2)
+
+# Print combined plot
+print(combined_plot)
+```
+
+
+
+
