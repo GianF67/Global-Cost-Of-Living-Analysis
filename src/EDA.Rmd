@@ -1,0 +1,349 @@
+---
+title: "Cost of Living - EDA"
+author: "Jade Meneghini"
+date: "February 2024"
+output: github_document
+---
+
+In this analysis, the costs of living worldwide is explored. The data has been scraped from [Numbeo](https://www.numbeo.com/) and can be found on [Kaggle](https://www.kaggle.com/datasets/mvieira101/global-cost-of-living/data?select=cost-of-living_v2.csv). The primary goal of this analysis is to gain familiarity and identify issues with the data provided that could impact analysis.
+
+```{r}
+#Select the local working directory
+proj_directory <- "C:/Users/jadem/OneDrive/Desktop/BABD/Statistics/PersoProject/Statistics_Project/Code"
+setwd(proj_directory)
+
+#load packages
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(knitr)
+```
+
+#### Load Data:
+
+```{r}
+#Import data from local .csv
+col_data <- read.csv("C:/Users/jadem/OneDrive/Desktop/BABD/Statistics/PersoProject/Statistics_Project/Data/cost-of-living_v2.csv")
+```
+
+# Exploratory data analysis
+
+## Summary
+
+Let's look at what the data set looks like:
+
+```{r}
+str(col_data)
+```
+
+We already see that there are some missing data and that the majority of our variables are numerical (expected as most variables refer to the cost of a good or service in USD).
+
+```{r}
+dim(col_data)
+length(unique(col_data$country))
+```
+
+With this we can see that the raw data has 4956 rows (observations) and 58 columns (variables). The observations correspond to 215 distinct countries.
+
+Let's look at the columns descriptive summary now:
+
+```{r}
+summary(col_data)
+```
+
+As it stands it is hard to understand the meaning of these variables, so let's visualize it using a boxplot:
+
+```{r summary, echo=FALSE}
+col_data_long <- gather(col_data, key = "metric", value = "value", -city, -country, -data_quality)
+
+ggplot(col_data_long, aes(x = metric, y = value)) +
+  geom_boxplot(fill = "pink", color = "black") +
+  labs(title = "Figure 0.0 - Descriptive Summary of Cost of Living Variables",
+       x = "Metric", y = "Cost (USD)")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+From Figure 0.0 we can tell that some variables have considerably different cost ranges, particularly variables x35, x38 and x52. We also have a warning message about non-finite values. Lastly it is hard to understand the different cost ranges as we have little to no insight on the meaning of each variable.
+
+## Index table
+
+Let's create an index table explaining the meaning of each variable label:
+
+```{r index, echo=FALSE}
+index_table <- data.frame(
+  column_name = c("city", "country", paste0("x", 1:55), "data_quality"), 
+  description = c("Name of the city","Name of the country",
+                  "Meal, Inexpensive Restaurant","Meal for 2 People, Mid-range Restaurant, Three-course",
+                  "McMeal at McDonalds","Domestic Beer (0.5 l draught, in restaurants)",
+                  "Imported Beer (0.33 l, in restaurants)","Cappuccino (regular, in restaurants)",
+                  "Coke/Pepsi (0.33 l, in restaurants)","Water (0.33 l, in restaurants)",
+                  "Milk (1l)","Loaf of Fresh White Bread (500g)",
+                  "Rice (white), (1kg)","Eggs (12)",
+                  "Local Cheese (1kg)","Chicken Fillets (1kg)",
+                  "Beef Round (1kg)", "Apples (1kg)",
+                  "Banana (1kg)", "Oranges (1kg)",
+                  "Tomato (1kg)","Potato (1kg)",
+                  "Onion (1kg)","Lettuce (1 head)",
+                  "Water (1.5 l, at the market)","Bottle of Wine (Mid-Range, at the market)",
+                  "Domestic Beer (0.5 l, at the market)","Imported Beer (0.33 l, at the market)",
+                  "Cigarettes 20 Pack (Marlboro)","One-way Ticket (Local Transport)",
+                  "Monthly Pass (Regular Price)","Taxi Start (Normal Tariff)",
+                  "Taxi 1km (Normal Tariff)","Taxi 1hour Waiting (Normal Tariff)",
+                  "Gasoline (1 l)","Volkswagen Golf 1.4 90 KW Trendline",
+                  "Toyota Corolla Sedan 1.6l 97kW Comfort","Basic (Electricity, Heating, Cooling, Water, Garbage) for 85m2 Apartment",
+                  "1 min. of Prepaid Mobile Tariff Local","Internet (60 Mbps or More, Unlimited Data, Cable/ADSL)",
+                  "Fitness Club, Monthly Fee for 1 Adult","Tennis Court Rent (1 Hour on Weekend)",
+                  "Cinema, International Release, 1 Seat","Preschool, Full Day, Private, Monthly for 1 Child",
+                  "International Primary School, Yearly for 1 Child", "1 Pair of Jeans",
+                  "1 Summer Dress in a Chain Store (Zara, H&M, ecc)","1 Pair of Nike Running Shoes",
+                  "1 Pair of Men Leather Business Shoes","Apartment (1 bedroom) in City Centre",
+                  "Apartment (1 bedroom) Outside of Centre","Apartment (3 bedrooms) in City Centre",
+                  "Apartment (3 bedrooms) Outside of Centre","Price per Square Meter to Buy Apartment in City Centre",
+                  "Price per Square Meter to Buy Apartment Outside of Centre","Average Monthly Net Salary (After Tax)",
+                  "Mortgage Interest Rate in Percentages (%), Yearly, for 20 Years Fixed-Rate", "0 if Numbeo considers that more contributors are needed to increase data quality, else 1"))
+kable(index_table)
+```
+
+## Missing Values
+
+```{r}
+sum(is.na(col_data))
+```
+
+We can see that there are 45858 missing values to manage. From our index table we also know that each observation is assigned a data quality score (0 data values are missing, 1 no values are missing). Before taking any decision about how we'll manage the missing values, let's look into the percentage of missing data variable by variable:
+
+```{r}
+AAA <- colSums(is.na(col_data))
+tot <- nrow(col_data)
+percent_AAA <- (AAA / tot) * 100
+```
+
+```{r missing, echo=FALSE}
+barplot(percent_AAA
+        , main = "Figure 1.0 - Percentage of Missing Values for Each Variable"
+        , xlab = "Variables"
+        , ylab = "Percentage of Missing Values"
+        , col = "purple"
+        , border = "black"
+        , names.arg = colnames(col_data)
+        , las = 2
+        , cex.names = 0.7)
+```
+
+Knowing that imputation is discouraged for variables with missing data, let's fix the threshold for "too much data missing" at +30% of data missing:
+
+-   x28 =\> 30% One-way Ticket (Local Transport)
+-   x29 =\> 44% Monthly Pass (Transport)
+-   x40 =\> 48% Tennis Court Rent
+-   x43 =\> 33% International Primary School, Yearly for 1 Child
+-   x51 =\> 30% Apartment (3 bedrooms) Outside of Centre
+-   x52 =\> 44% Price per Square Meter to Buy Apartment in City Centre
+-   x53 =\> 46% Price per Square Meter to Buy Apartment Outside of Centre
+
+If removing the above values, variable x50 (29.8%) Apartment (3 bedrooms) in City Centre has no longer meaning.
+
+## Data Imputation
+
+To solve the missing data issue, we opted with imputation with the mean. To reduce the bias, instead of imputing with the variable overall mean, the individual country mean was used.
+
+```{r}
+col_imputed_country <- col_data
+col_imputed_country <- col_imputed_country %>%
+  group_by(country) %>%
+  mutate(across(where(is.numeric), ~ifelse(is.na(.), mean(., na.rm = TRUE), .)))
+```
+
+Now drop the rows with remaining missing values and variables with over 30% of missing values.
+
+We can attribute the missing rows to smaller cities for which there wasn't enough data collected. Equally some countries such as Greenland or city states might simply lack relevant information for certain variables resulting in missing values.
+
+```{r}
+col_imputed_na <- na.omit(col_imputed_country)
+data <- select(col_imputed_na, -x28, -x29, -x40, -x43, -x50, -x51, -x52, -x53)
+
+save(data, file = "data.RData") #saving cleaned data for future analysis
+
+data10 <- subset(data[1:10,])
+kable(data10)
+```
+
+Here we go - 'data' the final data set we will be working on. Let's look at how it compares with the raw data, 'col_data'.
+
+Missing values:
+
+```{r}
+sum(is.na(data))
+```
+
+No missing values.
+
+```{r}
+dim(data)
+```
+
+The raw data has 4956 rows (observations) and 58 columns (variables). In comparison 'data' has 4849 rows (107 lost) and 50 columns (8 lost).
+
+```{r}
+length(unique(data$country))
+```
+
+'data' has 152 distinct countries, 63 less countries than the raw data.
+
+```{r}
+summary(data)
+```
+
+Compared to summary(col_data) the distribution and relationships are impacted as they now pull more towards each country mean, however this is to be expected due to the imputation that was done.
+
+## Grouping Variables by Shared Topic
+
+Now based on the variable meaning we are able to create a new data frames that has the variables grouped by similar topics (note: data_quality will be removed as no longer useful)
+
+```{r}
+headers                <- data[,1:2]
+meal                   <- data[,3:5]
+restaurants            <- data[,6:10]
+markets                <- data[,11:29]
+transportation         <- data[,30:33]
+car                    <- data[,34:35]
+utilities              <- data[,36:38]
+sports                 <- data[,39:40]
+childcare              <- data[,41]
+clothing               <- data[,42:45]
+rent                   <- data[,46:47]
+salaries               <- data[,48]
+mortgage               <- data[,49]
+
+meal_avg                   <- round(rowMeans(meal),digits=2)
+restaurants_avg            <- round(rowMeans(restaurants), digits=2)
+markets_avg                <- round(rowMeans(markets),digits=2)
+transportation_avg         <- round(rowMeans(transportation),digits=2)
+car_avg                    <- round(rowMeans(car),digits=2)
+utilities_avg              <- round(rowMeans(utilities),digits=2)
+sports_avg                 <- round(rowMeans(sports),digits=2)
+childcare_avg              <- round(rowMeans(childcare),digits=2)
+clothing_avg               <- round(rowMeans(clothing),digits=2)
+rent_avg                   <- round(rowMeans(rent),digits=2)
+salaries_avg               <- round(rowMeans(salaries),digits=2)
+mortgage_avg               <- round(rowMeans(mortgage),digits=2)
+
+final_data <- data.frame(
+  Country         = headers
+  ,Meals          = meal_avg
+  ,Restaurants    = restaurants_avg
+  ,Markets        = markets_avg
+  ,Transports     = transportation_avg
+  ,Car            = car_avg
+  ,Utilities      = utilities_avg
+  ,Entertainment  = sports_avg
+  ,Childcare      = childcare_avg
+  ,Clothing       = clothing_avg
+  ,MonthlyRent    = rent_avg
+  ,Salaries       = salaries_avg
+  ,Mortgage       = mortgage_avg
+)
+
+kable(final_data)
+
+save(final_data, file = "final_data.RData") #saving data with variables grouped by category for future analysis
+```
+
+Now let's visualize the descriptive summary for each category as box plots of 'final_data':
+
+```{r summaryfinal, echo=FALSE}
+meal_long <- gather(meal, key = "metric", value = "value")
+restaurants_long <- gather(restaurants, key = "metric", value = "value")
+markets_long <- gather(markets, key = "metric", value = "value")
+transportation_long <- gather(transportation, key = "metric", value = "value")
+car_long <- gather(car, key = "metric", value = "value")
+utilities_long <- gather(utilities, key = "metric", value = "value")
+sports_and_leisure_long <- gather(sports, key = "metric", value = "value")
+childcare_long <- gather(childcare, key = "metric", value = "value")
+clothing_and_shoes_long <- gather(clothing, key = "metric", value = "value")
+rent_per_month_long <- gather(rent, key = "metric", value = "value")
+salaries_and_financing_long <- gather(salaries, key = "metric", value = "value")
+mortgage_long <- gather(mortgage, key = "metric", value = "value")
+
+meal_plot <- ggplot(meal_long, aes(x = metric, y = value)) +
+  geom_boxplot(fill = "gold", color = "black") +
+  ggtitle("Restaurants Meals") + 
+  labs(x = "Variable", y = "Cost (USD)")
+
+restaurant_plot <- ggplot(restaurants_long, aes(x = metric, y = value)) +
+  geom_boxplot(fill = "gold", color = "black") +
+  labs(title = "Restaurants Drinks",
+       x = "Variable", y = "Cost (USD)")
+
+market_plot <- ggplot(markets_long, aes(x = metric, y = value)) +
+  geom_boxplot(fill = "gold", color = "black") +
+  labs(title = "Markets",
+       x = "Variable", y = "Cost (USD)")
+
+transport_plot <- ggplot(transportation_long, aes(x = metric, y = value)) +
+  geom_boxplot(fill = "gold", color = "black") +
+  labs(title = "Transportation",
+       x = "Variable", y = "Cost (USD)")
+
+car_plot <- ggplot(car_long, aes(x = metric, y = value)) +
+  geom_boxplot(fill = "gold", color = "black") +
+  labs(title = "Car",
+       x = "Variable", y = "Cost (USD)")
+
+utilities_plot <- ggplot(utilities_long, aes(x = metric, y = value)) + 
+  geom_boxplot(fill = "gold", color = "black") +
+  labs(title = "Utilities",
+       x = "Variable", y = "Cost (USD)")
+
+sport_plot <- ggplot(sports_and_leisure_long, aes(x = metric, y = value)) +
+  geom_boxplot(fill = "gold", color = "black") +
+  labs(title = "Sports And Leisure",
+       x = "Variable", y = "Cost (USD)")
+
+childcare_plot <- ggplot(childcare_long, aes(x = metric, y = value)) +
+  geom_boxplot(fill = "gold", color = "black") +
+  labs(title = "Childcare",
+       x = "Variable", y = "Cost (USD)")
+
+clothing_plot <- ggplot(clothing_and_shoes_long, aes(x = metric, y = value)) +
+  geom_boxplot(fill = "gold", color = "black") +
+  labs(title = "Clothing And Shoes",
+       x = "Variable", y = "Cost (USD)")
+
+rent_plot <- ggplot(rent_per_month_long, aes(x = metric, y = value)) +
+  geom_boxplot(fill = "gold", color = "black") +
+  labs(title = "Distribution of Rent Per Month",
+       x = "Variable", y = "Cost (USD)")
+
+salary_plot <- ggplot(salaries_and_financing_long, aes(x = metric, y = value)) +
+  geom_boxplot(fill = "gold", color = "black") +
+  ggtitle("Distribution of Salaries") + 
+  labs(x = "Variable", y = "Cost (USD)")
+
+
+mortgage_plot <- ggplot(mortgage_long, aes(x = metric, y = value)) +
+  geom_boxplot(fill = "gold", color = "black") +
+  labs(title = "Distribution of Mortgages",
+       x = "Variable", y = "Cost (USD)")
+
+#Formatting for the plots to be displayed in a grid:
+library(patchwork)
+((meal_plot | rent_plot | salary_plot) / market_plot) + plot_annotation(title = "Figure 2.0 - Descriptive Summary for Final Data", subtitle = "Essential needs vs Salary")
+```
+
+### Analysis
+
+There are significantly large outliers present in x2, x4, x15, x32, x35, x36, x39, x46, x54
+
+-   x2 Meal for 2 People, Mid-range -\> Mendrisio, Switzerland USD 213.69 -\> considering that this looks at mid-range restaurants the price can be accepted (despite it being on the higher end)
+
+-   x4 Domestic Beer (in restaurant) -\> Al Wakrah, Qatar USD 20.60 -\> cost of beer tends to be higher in countries whose majority of the population is Muslim due to scarcity and high avg cost of living
+
+-   x15 Beef Round (1kg) -\> top outliers are both cities from Switzerland
+
+-   x32 Taxi 1hour Waiting (Normal Tariff) -\> Niamay, Nigeria -\> False data #x34, x35 New cars -\> outliers are both Iranian cities, the cost of owning a car compared to the rest of the cost of living doesn't seem to match
+
+-   x39 Fitness Club -\> outliers are oultindish, not sure they can be relied on
+
+-   x46 Fitenss shoes -\> 900+USD for a pair of common running shoes seems outlandish for any country?
+
+-   x54 Average Monthly Net Salary (After Tax) -\> Schaan, Liechtenstein, the country is so small that for analysis purposes I think we can disregard this

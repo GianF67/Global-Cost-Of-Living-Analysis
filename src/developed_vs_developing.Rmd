@@ -1,0 +1,285 @@
+---
+title: "What are the main drivers of cost-of-living disparities between developed and developing nations?"
+subtitle: "Cost Of Living Analysis"
+author: "Jade Meneghini"
+date: "February 2024"
+output: github_document
+---
+
+In this analysis, the costs of living worldwide is explored. The data has been scraped from [Numbeo](https://www.numbeo.com/) and can be found on [Kaggle](https://www.kaggle.com/datasets/mvieira101/global-cost-of-living/data?select=cost-of-living_v2.csv). The primary goal of this analysis is to identify differentials between "developed" and "developing" countries. To split the initial data into developed and developing we used the [Human Development Index (HDI)](https://hdr.undp.org/data-center/country-insights) status data created by the UN.
+
+**Note:** the available data is not sufficient to holistically answer the question "what are the main drivers of cost-of-living disparities between developed and developing nations?", however we can look into the affect of cost of living vs development of countries.
+
+```{r}
+#Select the local working directory
+proj_directory <- "C:/Users/jadem/OneDrive/Desktop/BABD/Statistics/PersoProject/Statistics_Project/Code"
+setwd(proj_directory)
+
+#load packages
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(tidyr) #to be able to use gather()
+library(magrittr) #so we can use the pipe operator %>%
+library(knitr)
+```
+
+## Load data
+
+```{r data}
+load("data.RData")
+load("final_data.RData")
+HDI_data <- read.csv("C:/Users/jadem/OneDrive/Desktop/BABD/Statistics/PersoProject/Statistics_Project/Data/HDI.csv")
+```
+
+## Group Data by Country
+
+To be able to merge HDI ranks into our data frame we need to group "data" by country first. This will result in losing the city column.
+
+```{r}
+data_by_country <- data %>%
+  group_by(country) %>%
+  summarise(
+    x1 = mean(x1),
+    x2 = mean(x2),
+    x3 = mean(x3),
+    x4 = mean(x4),
+    x5 = mean(x5),
+    x6 = mean(x6),
+    x7 = mean(x7),
+    x8 = mean(x8),
+    x9 = mean(x9),
+    x10 = mean(x10),
+    x11 = mean(x11),
+    x12 = mean(x12),
+    x13 = mean(x13),
+    x14 = mean(x14),
+    x15 = mean(x15),
+    x16 = mean(x16),
+    x17 = mean(x17),
+    x18 = mean(x18),
+    x19 = mean(x19),
+    x20 = mean(x20),
+    x21 = mean(x21),
+    x22 = mean(x22),
+    x23 = mean(x23),
+    x24 = mean(x24),
+    x25 = mean(x25),
+    x26 = mean(x26),
+    x27 = mean(x27),
+    x30 = mean(x30),
+    x31 = mean(x31),
+    x32 = mean(x32),
+    x33 = mean(x33),
+    x34 = mean(x34),
+    x35 = mean(x35),
+    x36 = mean(x36),
+    x37 = mean(x37),
+    x38 = mean(x38),
+    x39 = mean(x39),
+    x41 = mean(x41),
+    x42 = mean(x42),
+    x44 = mean(x44),
+    x45 = mean(x45),
+    x46 = mean(x46),
+    x47 = mean(x47),
+    x48 = mean(x48),
+    x49 = mean(x49),
+    x54 = mean(x54),
+    x55 = mean(x55)
+  )
+
+head(data_by_country)
+```
+
+For clarity we will also do this with the variables grouped by category:
+
+```{r}
+category_by_country <- final_data %>%
+  group_by(Country.country) %>%
+  summarise(Meals           = mean(Meals)
+            ,Restaurants    = mean(Restaurants)
+            ,Markets        = mean(Markets)
+            ,Transports     = mean(Transports)
+            ,Car            = mean(Car)
+            ,Utilities      = mean(Utilities)
+            ,Entertainment  = mean(Entertainment)
+            ,Childcare      = mean(Childcare)
+            ,Clothing       = mean(Clothing)
+            ,MonthlyRent    = mean(MonthlyRent)
+            ,Salaries       = mean(Salaries)
+            ,Mortgage       = mean(Mortgage)
+            )
+
+head(category_by_country)
+```
+
+Going forward we will use the data grouped by country and category as it is a more manageable data set for data visualisation and interpretation. However the analysis can be done using the data with the variables ungrouped for more granularity and accuracy.
+
+## Group Data by Development Rank (HDI)
+
+Merging "data" and HDI ranks. The Human Development Index (HDI) is a composite index that ranks countries based on life expectancy, education, and per capita income. The ranking is from 1 to 191 (total of observed countries), where 1 is the most developed and 191 the least.
+
+```{r}
+merged_data <- merge(category_by_country, HDI_data, by.x = "Country.country", by.y = "country", all.x = TRUE)
+merged_data$Rank[is.na(merged_data$Rank)] <- 0 #replacing Rank NA with 0 for later easy separation with filter
+```
+
+In this analysis we segmented the data following the UN split into developed, high development, medium development and low development. By looking at the four development levels we can see that there isn't an even country split in the categories.
+
+```{r}
+vhigh_rank <- filter(merged_data, Rank >= 1 & Rank < 66)
+high_rank <- filter(merged_data, Rank >= 67 & Rank < 115)
+medium_rank <- filter(merged_data, Rank >= 116 & Rank < 159)
+low_rank <- filter(merged_data, Rank >= 160 & Rank < 191)
+na_rank <- filter(merged_data, Rank == 0)
+```
+
+[*Note*]{.underline}
+
+The "na_rank" data frame contains all the missing countries from the HDI rank:
+
+```{r na, echo=FALSE}
+kable(na_rank)
+```
+
+As we can see from the table above "na_rank" contains mainly low populated countries (New Caledonia), foreign territory (Gibraltar or Bermuda) or countries not officially recognised by the UN (Taiwan). For simplicity these countries will be left out of the analysis at this stage.
+
+## Descriptive Statistics for Each Country Development Level
+
+-   Let's visualise the summaries as box plots of the four development stages:
+
+```{r }
+p1 <- vhigh_rank[, -1] # Select all columns except country
+p2 <- high_rank[, -1]
+p3 <- medium_rank[, -1]
+p4 <- low_rank[, -1]
+
+boxplot(p1, main = "Developed Countries"
+        , xlab = "Variables"
+        , ylab = "Cost in USD"
+        , col = "gold")
+boxplot(p2, main = "High Developing Countries"
+        , xlab = "Variables"
+        , ylab = "Cost in USD"
+        , col = "gold")
+boxplot(p3, main = "Medium Developing Countries"
+        , xlab = "Variables"
+        , ylab = "Cost in USD"
+        , col = "gold")
+boxplot(p4, main = "Low Developing Countries"
+        , xlab = "Variables"
+        , ylab = "Cost in USD"
+        , col = "gold")
+
+par(mfrow = c(2,2))
+```
+
+#### Compare Descriptive Statistics for Each Group
+
+**Mean**
+
+-   Net salaries (x54) in developed nations are +4.5 times larger than closest high development countries.
+
+-   Low development countries have high average net salary (x54) almost equal to medium to high development countries.
+
+**Standard Deviation**
+
+-   When comparing countries development level each variables show great variability in cost.
+
+-   Net Salaries (x54) of both developed and low development countries have higher variability compared to medium to high development countries.
+
+## Correlation of Developed Countries (vhigh rank)
+
+```{r}
+vhigh_rank1 <- vhigh_rank[, -1]
+correlation_vhigh <- cor(vhigh_rank1)
+```
+
+```{r heatmapHIGH, echo=FALSE}
+correlation_melted <- melt(correlation_vhigh)
+ggplot(correlation_melted, aes(Var1, Var2, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "#E98768", mid = "white", high = "#582766", 
+                       midpoint = 0, limit = c(-1, 1), space = "Lab",
+                       name = "Correlation") +
+  labs(x = "Variables", y = "Variables", title = "Correlation Heatmap") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45 , vjust = 1, size = 10, hjust = 1)) +
+  coord_fixed() +
+  ggtitle("Developed countries (vhigh data)")
+```
+
+The heat map shows a strong negative correlation between "Salaries" and "Rank" in "Developed countries" (correlation coefficient value close to -1). This suggests there may be a direct relationship between these two variables, meaning that as the rank decreases, salaries tend to increase. In other words, in countries with higher development generally salaries tend to be higher.
+
+Now, let's look if there is also causality.
+
+## Linear Model of Developed Countries (vhigh rank)
+
+```{r}
+Salaries <- vhigh_rank$Salaries
+Rank <- vhigh_rank$Rank
+modelHIGH <- lm (Rank ~ Salaries)
+summary(modelHIGH)
+```
+
+```{r lrHIGH, echo=FALSE}
+plot(Salaries, Rank, cex=0.95, col="black")
+abline(coef(modelHIGH), col ="#E98768", lw=2)
+legend("topright",c("Obs.","Reg. line"),col=c("black","#E98768"),
+       lwd=c(1,1),lty=c(-1,1),pch=c(c(1,-1)))
+title(main="Linear Regression of Rank on Salaries in Developed Countries")
+```
+
+As expected the linear regression model further confirms the negative association between Rank and Salaries. The negative coefficient of -0.0082 for the "Salaries" term suggests that for every unit decrease in rank, salaries tend to increase by 0.0082 units. The p-value of 3.63e-09 indicates a statistically significant relationship between the two variables.
+
+However, the R-squared value of 0.4428 suggests that the model only explains 44.28% of the variability in salaries based on rank. This means there may be other unaccounted factors that also influence salaries.
+
+## Correlation of Low Developing Countries (low_rank)
+
+```{r}
+low_rank1 <- low_rank[, -1]
+correlation_low <- cor(low_rank1)
+```
+
+```{r heatmapLOW, echo=FALSE}
+correlation_melted <- melt(correlation_low)
+ggplot(correlation_melted, aes(Var1, Var2, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "#E98768", mid = "white", high = "#582766",
+                       midpoint = 0, limit = c(-1, 1), space = "Lab",
+                       name = "Correlation") +
+  labs(x = "Variables", y = "Variables", title = "Developing countries (low data)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, size = 10, hjust = 1)) +
+  coord_fixed()
+```
+
+The heat map shows a close to 0 correlation between "Salaries" and "Rank" in "Low Development countries". This suggests a weak or no relationship between these two variables, meaning that salaries might not be definitive determinants of country development after all.
+
+Now, let's look at causality.
+
+## Linear Model of Low Development Countries (low rank)
+
+```{r}
+Salaries <- low_rank$Salaries
+Rank <- low_rank$Rank
+modelLOW <- lm (Rank ~ Salaries)
+summary(modelLOW)
+```
+
+```{r lrLOW, echo=FALSE}
+plot(Salaries, Rank, cex=0.95, col="black")
+abline(coef(modelLOW), col ="#E98768", lw=2)
+legend("topright",c("Obs.","Reg. line"),col=c("black","#E98768"),
+       lwd=c(1,1),lty=c(-1,1),pch=c(c(1,-1)))
+title(main="Linear Regression of Rank on Salaries in Low Developing Countries")
+```
+
+We can conclude that there is likely no meaningful association between rank and salary in low developing countries. Changes in rank would not be a good predictor of changes in salary, and vice versa.
+
+It's important to note that even though the model doesn't show a statistically significant relationship, there might be a non-linear relationship, or other factors might be influencing "Rank" and "Salaries" that are not accounted for in this model.
+
+## So, what are the main drivers of cost-of-living disparities between developed and developing nations?
+
+There is no one overarching driver of cost-of-living disparities between developed and developing nations. The relationship between cost-of-living and country development is complex and encompasses more than simply economic variables. To further understand the drivers of cost-of-living disparities it is necessary to look at other factors such as culture, economic structure, law and regulations, and institutional frameworks.
