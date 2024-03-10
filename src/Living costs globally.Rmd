@@ -1,0 +1,563 @@
+---
+title: "How do living costs compare globally? Assessing affordability levels for essential needs."
+author: "Hui Yi Huang"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1) Dataset
+
+<https://www.kaggle.com/datasets/mvieira101/global-cost-of-living>
+
+# 2) Working dir
+
+```{r}
+setwd("/Users/sarah/Documents/資料/POLIMI/BABD/10. Fundamentals of Statistics/Project/cost-of-living-analysis/src")
+```
+
+# 3) Import libraries
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(magrittr)
+library(GGally)
+```
+
+# 4) Data loading
+
+```{r}
+col_data <- read.csv("./../data/cost-of-living-updated.csv")
+```
+
+# 5) Data cleaning
+
+```{r}
+col_imputed_country <- col_data
+
+col_imputed_country <- col_imputed_country %>%
+  group_by(country) %>%
+  mutate(across(where(is.numeric), ~ifelse(is.na(.), mean(., na.rm = TRUE), .))) #Group by 'country' and calculate mean for each numeric column
+
+data <- na.omit(col_imputed_country) #drop remaining missing values
+```
+
+# 6) Format data into categories
+
+```{r}
+restaurant = data[,3:10]
+c_restaurant = data[,1:10]
+market = data[,11:29]
+c_market = data[, c(1:2, 11:29)]
+transportation = data[,30:37]
+c_transportation = data[, c(1:2,30:37)]
+utility = data[,38:40]
+c_utility = data[, c(1:2,38:40)]
+sport = data[,41:43]
+c_sport = data[, c(1:2,41:43)]
+childcare = data[,44:45]
+c_childcare = data[, c(1:2,44:45)]
+cloth = data[,46:49]
+c_cloth = data[, c(1:2,46:49)]
+rentnbuy = data[,50:55]
+c_rentnbuy = data[,c(1:2,50:55)]
+salary = data[,56:57]
+c_salary = data[, c(1:2,56:57)]
+```
+
+# 7) How do living costs compare globally?
+
+Overview of all the categories compared globally to:
+1. Examine the pricing distribution, concentration trends, and variability of different cost factors in the global market.
+2. Find out if there is any correlation between each factor.
+
+## 7.1) Histogram, Boxplt, and ggpairs of restaurant catogory
+
+```{r}
+names_restaurant <- c("meal for 1", "meal for 2", "McDonalds", "Domestic Beer", "Imported Beer", "Cappuccino", "Coke/Pepsi", "0.33L Water")
+
+for (i in seq_along(colnames(restaurant))) {
+  col <- colnames(restaurant)[i]
+  title_name <- ifelse(i <= length(names_restaurant), names_restaurant[i], col)
+  hist(restaurant[[col]], main = title_name, xlab = "Price", col = "lightblue", border = "black", freq = FALSE)
+}
+
+for (i in seq_along(colnames(restaurant))) {
+  col <- colnames(restaurant)[i]
+  title_name <- ifelse(i <= length(names_restaurant), names_restaurant[i], col)
+  boxplot(restaurant[[col]], horizontal = TRUE, main = title_name, col = "lightblue", border = "black", notch = TRUE)
+}
+
+ggpairs(restaurant, columnLabels = names_restaurant)
+```
+
+## 7.2) Histogram, Boxplt, and ggpairs of market catogory
+
+```{r}
+names_market <- c("1L Milk", "White Bread", "Rice", "Eggs", "Cheese", "Chicken", "Beef", "Apples", "Banana", "Orange", "Tomato", "Potato", "Onion", "Lettuce", "1.5L Water", "Wine", "Domestic Beer", "Imported Beer", "Cigarattes")
+
+for (i in seq_along(colnames(market))) {
+  col <- colnames(market)[i]
+  title_name <- ifelse(i <= length(names_market), names_market[i], col)
+  hist(market[[col]], main = title_name, xlab = "Price", col = "lightblue", border = "black", freq = FALSE)
+}
+
+for (i in seq_along(colnames(market))) {
+  col <- colnames(market)[i]
+  title_name <- ifelse(i <= length(names_market), names_market[i], col)
+  boxplot(market[[col]], horizontal = TRUE, main = title_name, col = "lightblue", border = "black", notch = TRUE)
+}
+
+ggpairs(market, columnLabels = names_market, mapping = aes(size = 0.1)) + theme(text = element_text(size = 0.3))
+```
+
+## 7.3) Histogram, Boxplt, and ggpairs of transportation catogory
+
+```{r}
+names_transportation <- c("1 ticket", "Monthly Pass", "Taxi 0", "Taxi 1km", "Taxi 1hour wait","Gasoline", "Volkswagen", "Toyota")
+
+for (i in seq_along(colnames(transportation))) {
+  col <- colnames(transportation)[i]
+  title_name <- ifelse(i <= length(names_transportation), names_transportation[i], col)
+  hist(transportation[[col]], main = title_name, xlab = "Price", col = "lightblue", border = "black", freq = FALSE)
+}
+
+for (i in seq_along(colnames(transportation))) {
+  col <- colnames(transportation)[i]
+  title_name <- ifelse(i <= length(names_transportation), names_transportation[i], col)
+  boxplot(transportation[[col]], horizontal = TRUE, main = title_name, col = "lightblue", border = "black", notch = TRUE)
+}
+
+ggpairs(transportation, columnLabels = names_transportation)
+```
+
+## 7.4) Histogram, Boxplt, and ggpairs of utility catogory
+
+```{r}
+names_utility <- c("Basic", "Prepaid 1 min", "Internet")
+
+for (i in seq_along(colnames(utility))) {
+  col <- colnames(utility)[i]
+  title_name <- ifelse(i <= length(names_utility), names_utility[i], col)
+  hist(utility[[col]], main = title_name, xlab = "Price", col = "lightblue", border = "black", freq = FALSE)
+}
+
+for (i in seq_along(colnames(utility))) {
+  col <- colnames(utility)[i]
+  title_name <- ifelse(i <= length(names_utility), names_utility[i], col)
+  boxplot(utility[[col]], horizontal = TRUE, main = title_name, col = "lightblue", border = "black", notch = TRUE)
+}
+
+ggpairs(utility, columnLabels = names_utility)
+```
+
+## 7.5) Histogram, Boxplt, and ggpairs of childcare catogory
+
+```{r}
+names_childcare <- c("Preschool", "International Primary School")
+
+for (i in seq_along(colnames(childcare))) {
+  col <- colnames(childcare)[i]
+  title_name <- ifelse(i <= length(names_childcare), names_childcare[i], col)
+  hist(childcare[[col]], main = title_name, xlab = "Price", col = "lightblue", border = "black", freq = FALSE)
+}
+
+for (i in seq_along(colnames(childcare))) {
+  col <- colnames(childcare)[i]
+  title_name <- ifelse(i <= length(names_childcare), names_childcare[i], col)
+  boxplot(childcare[[col]], horizontal = TRUE, main = title_name, col = "lightblue", border = "black", notch = TRUE)
+}
+
+ggpairs(childcare, columnLabels = names_childcare)
+```
+
+## 7.6) Histogram, Boxplt, and ggpairs of cloth catogory
+
+```{r}
+names_cloth <- c("Jeans", "Summer Dress", "Running Shoes", "Leather Shoes")
+
+for (i in seq_along(colnames(cloth))) {
+  col <- colnames(cloth)[i]
+  title_name <- ifelse(i <= length(names_cloth), names_cloth[i], col)
+  hist(cloth[[col]], main = title_name, xlab = "Price", col = "lightblue", border = "black", freq = FALSE)
+}
+
+for (i in seq_along(colnames(cloth))) {
+  col <- colnames(cloth)[i]
+  title_name <- ifelse(i <= length(names_cloth), names_cloth[i], col)
+  boxplot(cloth[[col]], horizontal = TRUE, main = title_name, col = "lightblue", border = "black", notch = TRUE)
+}
+
+ggpairs(cloth, columnLabels = names_cloth)
+```
+
+## 7.7) Histogram, Boxplt, and ggpairs of rent&buy catogory
+
+```{r}
+names_rentnbuy <- c("1 bedroom in city", "1 bedroom outside city", "3 bedrooms in city", "3 bedrooms outside city", "Buy in city", "Buy outside city")
+
+for (i in seq_along(colnames(rentnbuy))) {
+  col <- colnames(rentnbuy)[i]
+  title_name <- ifelse(i <= length(names_rentnbuy), names_rentnbuy[i], col)
+  hist(rentnbuy[[col]], main = title_name, xlab = "Price", col = "lightblue", border = "black", freq = FALSE)
+}
+
+for (i in seq_along(colnames(rentnbuy))) {
+  col <- colnames(rentnbuy)[i]
+  title_name <- ifelse(i <= length(names_rentnbuy), names_rentnbuy[i], col)
+  boxplot(rentnbuy[[col]], horizontal = TRUE, main = title_name, col = "lightblue", border = "black", notch = TRUE)
+}
+
+ggpairs(rentnbuy, columnLabels = names_rentnbuy)
+```
+
+### 7.7.1) Filter outliers in rent&buy catogory
+
+However, there are some outliers in this category. To make the data more clear, we filter out possible outliers.
+As we can see, the correlation between renting rooms in different situations is about 90%, but there's no correlation between renting rooms and buying rooms.
+
+```{r}
+c_rentnbuy_fil <- filter(c_rentnbuy, city != "Kermanshah" & city != "Niamey" & city != "Lae" & city != "Sharjah" & city != "Mogadishu" & city != "Jawhar" & city != "Hargeys")
+selected_vars <- c("x48", "x49", "x50", "x51", "x52", "x53")
+ggpairs(c_rentnbuy_fil, columns = selected_vars, columnLabels = names_rentnbuy)
+```
+
+## 7.8) Factors with normal contribution
+
+We found out that the price distribution in all factors is highly right-skewed, but "Mcdonalds", "Cappuccino", and "Gasoline" are closer to normal distribution.
+
+- McDonalds : 
+  - Global brand with standardized products and pricing strategy. 
+- Cappuccino & Gasoline :
+  - Globally traded commodity produced and consumed in numerous countries worldwide. 
+  - Relatively balanced supply-demand relationship.
+- Jeans : 
+  - Fundamental item with standardized design and material characteristics, which tend to have consistent pricing across different regions. 
+  - Compared with other items, be less influenced by fashion trends, seasonal changes, and regional preferences.
+
+```{r}
+r_m_c <- restaurant[, c("x3", "x6")]
+t_g <- transportation[, c("x33")]
+c_j <- cloth[, c("x44")]
+
+par(mfrow=c(2, 4))
+for (i in seq_along(colnames(r_m_c))) {
+  col <- colnames(r_m_c)[i]
+  hist(r_m_c[[col]], main = ifelse(col == "x3", "McDonalds", "Cappuccino"), xlab = "Price", col = "lightblue", border = "black", freq = FALSE)
+}
+for (i in seq_along(colnames(t_g))) {
+  col <- colnames(t_g)[i]
+  hist(t_g[[col]], main = ifelse(col == "x33", "Gasoline (1 liter)"), xlab = "Price", col = "lightblue", border = "black", freq = FALSE)
+}
+for (i in seq_along(colnames(c_j))) {  
+  col <- colnames(c_j)[i]  
+  hist(c_j[[col]], main = ifelse(col == "x44", "1 Pair of Jeans (Levis 501 Or Similar)"), xlab = "Price", col = "lightblue", border = "black", freq = FALSE)
+}
+
+for (i in seq_along(colnames(r_m_c))) {
+  col <- colnames(r_m_c)[i]
+  boxplot(r_m_c[[col]], horizontal = TRUE, main = ifelse(col == "x3", "McDonalds", "Cappuccino"), col = "lightblue", border = "black", notch = TRUE)
+}
+for (i in seq_along(colnames(t_g))) {
+  col <- colnames(t_g)[i]
+  boxplot(t_g[[col]], horizontal = TRUE, main = ifelse(col == "x33", "Gasoline (1 liter)"), col = "lightblue", border = "black", notch = TRUE)
+}
+for (i in seq_along(colnames(c_j))) {  
+  col <- colnames(c_j)[i]  
+  boxplot(c_j[[col]], horizontal = TRUE, main = ifelse(col == "x44", "1 Pair of Jeans (Levis 501 Or Similar)"), col = "lightblue", border = "black", notch = TRUE)
+}
+```
+
+# 8) Assessing affordability levels for essential needs.
+
+To understand the affordability of essential needs, we have to compare the basic cost with salary.
+The basic cost includes daily meals(90*x1), transportation(x29), utilities(x36~x38), and renting a room(x48).
+
+## 8.1) Count the basic cost and filter out the outliers
+
+```{r}
+basic_cost <- data %>%
+  mutate(basic_cost = 90 * x1 + x29 + x36 + x37 + x38 + x48)
+basic_cost_fil <- filter(basic_cost, city != "Kermanshah" & city != "Niamey" & city != "Lae" & city != "Sharjah" & city != "Mogadishu" & city != "Jawhar" & city != "Hargeys" & country != "Papua New Guinea" & city != "Schaan")
+print(basic_cost_fil)
+```
+
+## 8.2) The correlation between salaries, basic cost, daily meal, transportation, and renting.
+
+### 8.2.1) Linear regression of salaries and basic cost.
+
+The linear regression analysis between salary (x54) and basic living costs indicates a strong positive relationship (β = 1.131, p < 0.001). 
+The model suggests that, on average, for every unit increase in basic living costs, the salary increases by approximately 1.131 units. 
+The overall model fit is significant (p < 0.001), explaining about 69.95% of the variance in salary based on basic living costs.
+
+```{r}
+linear_model <- lm(x54 ~ basic_cost, data = basic_cost_fil)
+summary(linear_model)
+
+predictions <- predict(linear_model, newdata = basic_cost_fil)
+residuals <- residuals(linear_model)
+residual_data <- data.frame(Predicted = predictions, Residuals = residuals)
+
+ggplot(residual_data, aes(x = Predicted, y = Residuals)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(title = "Residual Plot", x = "Predicted Values", y = "Residuals")
+```
+
+### 8.2.2) Multi-linear regression of salaries, basic cost, daily meal, transportation, and renting.
+
+The multiple regression analysis, incorporating basic living costs, meal expenses (x1), transportation costs (x29), and rental expenses (x48), reveals a significant overall model fit (Adjusted R-squared = 0.7354, p < 0.001).
+The coefficients suggest that basic living costs, transportation costs, and rental expenses have a positive impact on salary, while meal expenses exhibit a negative association after accounting for the other variables in the model.
+
+The negative correlation between meal expenses and salary in the multiple regression analysis could be influenced by various factors:
+- Dietary Choices: Individuals with lower salaries may opt for less expensive food options, affecting their overall meal expenses.
+- Lifestyle Differences: Variations in lifestyle choices, such as cooking at home versus dining out, can impact meal expenses. Individuals with lower salaries may choose more cost-effective meal options or prefer to cook at home without dining out.
+
+```{r}
+multiple_model <- lm(x54 ~ basic_cost + x1 + x29 + x48, data = basic_cost_fil)
+summary(multiple_model)
+plot(multiple_model)
+```
+
+## 8.3) Basic Cost compared with Salaries in cities
+
+### 8.3.1) Scatter plot of all the cities
+
+```{r}
+ggplot(basic_cost_fil, aes(x = x54, y = basic_cost, label = city)) +
+  geom_point(color = rainbow(nrow(basic_cost_fil))) +
+  geom_text(vjust = 1.5, hjust = 0.5, size = 3) +
+  geom_smooth(method = "lm", se = FALSE, color = "purple") + 
+  labs(title = "Scatter Plot of Salary vs Basic Cost", x = "Net Salary", y = "Basic Cost")
+```
+
+### 8.3.2) Compared the range of basic costs and salaries
+
+- Range of salary is bigger than basic cost:
+  - Higher volatility in salaries across cities.
+  - Economic conditions or industry differences influence the salary.
+
+- Average of basic cost is higher than salary:
+  - In some cities, salary is not enough to cover basic living costs.
+  - Price levels, housing costs, inflation rates, etc.
+
+```{r}
+ggplot(basic_cost_fil, aes(x = x54, fill = "Salary")) +
+  geom_density(alpha = 0.5) +
+  geom_density(aes(x = basic_cost, fill = "Basic Cost"), alpha = 0.5) +
+  labs(title = "Density Plot of Salary and Basic Cost", x = "Values", fill = "Group") +
+  scale_fill_manual(values = c("Salary" = "skyblue", "Basic Cost" = "orange"))
+
+ggplot(basic_cost_fil, aes(y = x54, x = factor("Salary"), fill = "Salary")) +
+  geom_boxplot(alpha = 0.5) +
+  geom_boxplot(aes(y = basic_cost, x = factor("Basic Cost"), fill = "Basic Cost"), alpha = 0.5) +
+  labs(title = "Horizontal Boxplot of Salary and Basic Cost", y = "Values", x = "", fill = "Group") +
+  scale_fill_manual(values = c("Salary" = "skyblue", "Basic Cost" = "orange")) +
+  theme_minimal() +
+  coord_flip() +
+  scale_x_discrete(labels = c("Salary", "Basic Cost"))
+```
+
+## 8.4) Basic Cost and Salaries by countries by average
+
+### 8.4.1) Find the average basic costs and average salaries in all countries.
+
+```{r}
+result_bc <- basic_cost_fil %>%
+  group_by(country) %>%
+  summarize(
+    avg_salary = mean(x54, na.rm = TRUE),
+    avg_basic_cost = mean(basic_cost, na.rm = TRUE))
+print(result_bc)
+```
+
+### 8.4.2) Scatter plot of the Avg Salary vs Avg Basic Cost
+
+There are some outliers:
+*High affordability for essential needs:
+- Liechtenstein
+  - High-development financial hub in Europe with the highest salary.
+  - Small scale with low populations, which means it is much easier to control the cost of living.
+  
+*Low affordability for essential needs:
+- Bermuda
+  - Isolation in the North Atlantic Ocean means that all the necessary needs rely on imports.
+  - Tourist-driven economy where all the costs of living are highly connected with tourists, not the residents.
+
+```{r}
+ggplot(result_bc, aes(x = avg_salary, y = avg_basic_cost)) +
+  geom_point(color = rainbow(nrow(result_bc))) +
+  geom_text(aes(label = country), vjust = 1.5, hjust = 0.5, size = 4) + 
+  geom_smooth(method = "lm", se = FALSE, color = "purple") +
+  labs(title = "Avg Salary vs Avg Basic Cost", x = "Avg Salary", y = "Avg Basic Cost")
+```
+
+### 8.4.3) Only select the very high-developed countries
+
+Even among the very high-developed countries, boxplots of basic costs show marked differences, while salary ranges also point out significant differences.
+
+This observation suggests that, despite the overall economic development, there remains considerable diversity in both living expenses and salary levels. Various factors, such as differences in the cost of living, social welfare policies, and labor market conditions among different countries, contribute to this variability.
+
+```{r}
+basic_cost_vh <- basic_cost_fil %>% filter(country %in% c("Argentina", "Australia","Austria", "Bahamas", "Bahrain", "Belarus", "Belgium", "Canada", "Chile", "Costa Rica", "Croatia", "Cyprus", "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Georgia", "Germany", "Greece", "Hong Kong", "Hungary", "Iceland", "Ireland", "Israel", "Italy", "Japan", "Kazakhstan", "Kuwait", "Latvia", "Liechtenstein", "Lithuania", "Luxembourg", "Malaysia", "Malta", "Mauritius", "Montenegro", "Netherlands", "New Zealand", "Norway", "Oman", "Panama", "Poland", "Portugal", "Qatar", "Romania", "Russia", "Saudi Arabia", "Serbia", "Singapore", "Slovakia", "Slovenia", "South Korea", "Spain", "Sweden", "Switzerland", "Trinidad And Tobago", "Turkey", "United Arab Emirates", "United Kingdom", "United States", "Uruguay"))
+
+abbr_mapping <- c(
+  "Argentina" = "ARG",
+  "Australia" = "AUS",
+  "Austria" = "AUT",
+  "Bahamas" = "BHS",
+  "Bahrain" = "BHR",
+  "Belarus" = "BLR",
+  "Belgium" = "BEL",
+  "Canada" = "CAN",
+  "Chile" = "CHL",
+  "Costa Rica" = "CRI",
+  "Croatia" = "HRV",
+  "Cyprus" = "CYP",
+  "Czech Republic" = "CZE",
+  "Denmark" = "DNK",
+  "Estonia" = "EST",
+  "Finland" = "FIN",
+  "France" = "FRA",
+  "Georgia" = "GEO",
+  "Germany" = "DEU",
+  "Greece" = "GRC",
+  "Hong Kong" = "HKG",
+  "Hungary" = "HUN",
+  "Iceland" = "ISL",
+  "Ireland" = "IRL",
+  "Israel" = "ISR",
+  "Italy" = "ITA",
+  "Japan" = "JPN",
+  "Kazakhstan" = "KAZ",
+  "Kuwait" = "KWT",
+  "Latvia" = "LVA",
+  "Liechtenstein" = "LIE",
+  "Lithuania" = "LTU",
+  "Luxembourg" = "LUX",
+  "Malaysia" = "MYS",
+  "Malta" = "MLT",
+  "Mauritius" = "MUS",
+  "Montenegro" = "MNE",
+  "Netherlands" = "NLD",
+  "New Zealand" = "NZL",
+  "Norway" = "NOR",
+  "Oman" = "OMN",
+  "Panama" = "PAN",
+  "Poland" = "POL",
+  "Portugal" = "PRT",
+  "Qatar" = "QAT",
+  "Romania" = "ROU",
+  "Russia" = "RUS",
+  "Saudi Arabia" = "SAU",
+  "Serbia" = "SRB",
+  "Singapore" = "SGP",
+  "Slovakia" = "SVK",
+  "Slovenia" = "SVN",
+  "South Korea" = "KOR",
+  "Spain" = "ESP",
+  "Sweden" = "SWE",
+  "Switzerland" = "CHE",
+  "Trinidad And Tobago" = "TTO",
+  "Turkey" = "TUR",
+  "United Arab Emirates" = "ARE",
+  "United Kingdom" = "GBR",
+  "United States" = "USA",
+  "Uruguay" = "URY"
+)
+
+basic_cost_vh$country_abbr <- abbr_mapping[basic_cost_vh$country]
+
+ggplot(basic_cost_vh, aes(x = country_abbr, y = x54, fill = "Salary")) +
+  geom_boxplot(position = position_dodge(width = 0.5)) + 
+  geom_boxplot(aes(x = country_abbr, y = basic_cost, fill = "Basic Cost"), position = position_dodge(width = 0.5)) +
+  labs(title = "Salary and Basic Cost in very high developed countries", x = "Country", y = "Values") +
+  scale_fill_manual(values = c("Salary" = "skyblue", "Basic Cost" = "orange")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(size = 5, angle = 60, hjust = 0.5))
+```
+
+## 8.5) Find the capitals
+
+Capital usually is the economic hub for the nation, which provides the largest job opportunity and has the biggest influence on the nation.
+
+### 8.5.1) Import the capital data and merge it with the basic cost data.
+
+```{r}
+library(readxl)
+Capital <- read_excel("~/Documents/資料/POLIMI/BABD/10. Fundamentals of Statistics/Project/Practice/Capital.xlsx")
+merged_data <- merge(basic_cost_fil, Capital, by.x = "city", by.y = "Capital", all.x = FALSE)
+#view(merged_data)
+```
+
+### 8.5.2) Filter out the wrong data or duplicated data.
+
+```{r}
+merged_data_fil <- merged_data %>% 
+  filter(!(city == "Victoria" & country == "Argentina") 
+         & !(city == "Georgetown" & country == "Australia")
+         & !(city == "London" & country == "Canada")
+         & !(city == "Victoria" & country == "Canada")
+         & !(city == "Victoria" & country == "Chile")
+         & !(city == "Tripoli" & country == "Lebanon")
+         & !(city == "Rabat" & country == "Malta")
+         & !(city == "Santiago" & country == "Panama")
+         & !(city == "Belfast" & country == "United Kingdom")
+         & !(city == "Edinburgh" & country == "United Kingdom")
+         & !(city == "San Jose" & country == "United States")
+         & !(city == "Kinshasa" & country == "Congo")
+         & !(city == "Havana" & country == "Cuba")
+         & !(city == "Damascus" & country == "Syria"))
+view(merged_data_fil)
+```
+
+### 8.5.3) Scatter plot of basic cost and salary in capitals
+
+For those capitals with low salaries and high basic costs, such as Ashgabat in Turkmenistan and Nassau in Bahamas, people will tend to leave the country and move to higher-salary countries with an average cost of living. 
+
+It may cause some problems:
+- Skill Drain: The loss of highly skilled immigrants may lead to a decline in the competitiveness of the country experiencing the emigration.
+- Economic Conditions: Economic downturns can result in an increase in unemployment rates, making it more challenging for people to secure jobs.
+
+```{r}
+ggplot(merged_data_fil, aes(x = x54, y = basic_cost, label = paste(country, "\n", city))) +
+  geom_point(color = rainbow(nrow(merged_data_fil))) +
+  geom_text(vjust = 0.5, hjust = 0.5, size = 3) + 
+  geom_smooth(method = "lm", se = FALSE, color = "purple") +
+  labs(title = "Salary vs Basic Cost in capitals", x = "Net Salary", y = "Basic Cost")
+```
+
+## 8.6) Compared the capitals by basic cost and salary ratio
+
+As seen in the chart above, certain capitals have low salaries and high basic costs, and capitals have a significant impact on nations, which implies that residents in those countries may be unable to meet their fundamental necessities.
+
+By evaluating the ratio of basic cost to salary, we identify capitals with the highest ratios, emphasizing the significance of addressing these areas as a priority.
+
+### 8.6.1) Top 10 capitals with highest ratio
+
+```{r}
+merged_data_fil$cost_salary_ratio <- merged_data_fil$basic_cost / merged_data_fil$x54
+#view(merged_data_fil)
+top_10_csr <- merged_data_fil %>%
+  arrange(desc(cost_salary_ratio)) %>%
+  head(10)
+#view(top_10_csr)
+ggplot(top_10_csr, aes(x = reorder(paste(country, "-", city), -cost_salary_ratio), y = cost_salary_ratio)) +
+  geom_bar(stat = "identity", fill = "pink3") +
+  labs(title = "Top 10 Capitals with highest cost salary ratio", x = "Country - City", y = "Cost Salary Ratio") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10))
+```
+
+### 8.6.2) Possible actions for these countries
+
+- Reduce the cost:
+  1. Price controls on essential goods
+  2. Increase supply of housing
+  
+- Increase salary level:
+  1. Increase minimum wage
+  2. Education and training for workers
+
