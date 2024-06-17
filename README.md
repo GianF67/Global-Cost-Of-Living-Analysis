@@ -10,5 +10,3 @@ The next step is to look at how living costs compare globally to determine the f
 In our concluding phase, we delve into an insightful comparison between developed and developing countries, check develop_vs_developing.Rmd file.
 
 Join us as we navigate through the intricacies of statistical analysis and unveil meaningful insights into global living costs.
-
-Note: this was a collaborative task with other two peers in the international BABD master @ POLIMI General School of Management.
